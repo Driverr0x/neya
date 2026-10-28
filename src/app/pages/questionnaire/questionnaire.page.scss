@@ -1,0 +1,127 @@
+.card {
+  margin: 16px 0;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  h2 {
+    margin-top: 8px;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+}
+
+.loading-card {
+  text-align: center;
+  padding: 32px;
+}
+
+.result-card {
+  h2 {
+    font-size: 1.4rem;
+  }
+}
+
+.simple-explanation {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--neya-pink-soft);
+  border-radius: 8px;
+
+  p {
+    margin: 6px 0;
+  }
+}
+
+.ai-consent {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--neya-beige-dark);
+  border-radius: 10px;
+  background: var(--neya-background);
+
+  label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--neya-text);
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  input {
+    flex: 0 0 auto;
+    margin-top: 3px;
+    accent-color: var(--neya-pink);
+  }
+}
+
+.ai-error {
+  margin: 0;
+  color: #8f2e2e;
+  font-size: 0.85rem;
+}
+
+.reasons-list {
+  padding-left: 18px;
+  margin: 12px 0;
+}
+
+.action-buttons {
+  padding: 0 4px;
+  margin-top: 16px;
+
+  .big-btn {
+    margin-bottom: 12px;
+    --border-radius: 10px;
+  }
+}
+
+.question-card {
+  .big-btn {
+    margin-top: 12px;
+    --border-radius: 10px;
+  }
+}
+
+.question-illustration {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  margin: 12px auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--neya-pink-soft);
+  color: var(--neya-pink);
+
+  ion-icon {
+    font-size: 2.5rem;
+  }
+}
+
+.listen-button {
+  margin: 14px 0 4px;
+  --border-radius: 10px;
+}
+
+.audio-message {
+  margin: 8px 0;
+  color: var(--neya-text);
+  font-size: 0.9rem;
+}
+
+.disclaimer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 24px;
+  padding: 0 16px;
+}
+
+.muted {
+  color: #666;
+  font-size: 0.9rem;
+}

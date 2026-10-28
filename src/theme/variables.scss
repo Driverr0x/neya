@@ -1,2 +1,42 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+
+:root {
+  --ion-color-primary: #d6336c;
+  --ion-color-primary-rgb: 214, 51, 108;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #bd2d5f;
+  --ion-color-primary-tint: #db477b;
+
+  --ion-color-secondary: #f28a91;
+  --ion-color-secondary-rgb: 242, 138, 145;
+  --ion-color-secondary-contrast: #38272d;
+  --ion-color-secondary-contrast-rgb: 56, 39, 45;
+  --ion-color-secondary-shade: #d57980;
+  --ion-color-secondary-tint: #f3979d;
+
+  --ion-color-tertiary: #e8d2bd;
+  --ion-color-tertiary-rgb: 232, 210, 189;
+  --ion-color-tertiary-contrast: #38272d;
+  --ion-color-tertiary-contrast-rgb: 56, 39, 45;
+  --ion-color-tertiary-shade: #ccb9a7;
+  --ion-color-tertiary-tint: #ead7c5;
+
+  --ion-background-color: #fff9f5;
+  --ion-text-color: #38272d;
+  --ion-item-background: #ffffff;
+  --ion-toolbar-background: #ffffff;
+  --ion-tab-bar-background: #ffffff;
+  --neya-pink: #d6336c;
+  --neya-pink-light: #f28a91;
+  --neya-pink-soft: #fce8ec;
+  --neya-salmon: #f28a91;
+  --neya-beige: #f4e8dc;
+  --neya-beige-dark: #e8d2bd;
+  --neya-surface: #ffffff;
+  --neya-background: #fff9f5;
+  --neya-text: #38272d;
+  --neya-muted: #75666b;
+  --neya-shadow: 0 8px 24px rgba(86, 48, 61, 0.08);
+}

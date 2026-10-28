@@ -1,0 +1,137 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>Structures de santé</ion-title>
+  </ion-toolbar>
+  
+  <ion-toolbar>
+    <ion-segment [value]="view()" (ionChange)="view.set($any($event.detail.value))">
+      <ion-segment-button value="list">
+        <ion-label>Structures</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="month">
+        <ion-label>Dépistages du mois</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+
+  @if (view() === 'list') { 
+    <ion-toolbar>
+      <ion-searchbar placeholder="Ville ou service…" (ionInput)="q.set($any($event.target).value ?? '')" />
+    </ion-toolbar> 
+  }
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (error()) {
+    <p class="card error-message" role="alert">{{ error() }}</p>
+  }
+  @if (view() === 'list') {
+    <!-- Vue Liste des structures -->
+    @for (s of list(); track s.id) {
+      <div class="card structure-card">
+        <h3>{{ s.name }}</h3>
+        <p class="muted">
+          <ion-icon name="location-outline" /> {{ s.city }} · 
+          <ion-icon name="time-outline" /> {{ s.hours }}
+        </p>
+        <p class="muted services-text">{{ s.services.join(' · ') }}</p>
+        
+        <a [href]="'tel:' + s.phone" class="phone-link">
+          <ion-icon name="call-outline" /> {{ s.phone }}
+        </a>
+
+        <div class="button-group">
+          <ion-button fill="outline" [href]="mapUrl(s)" target="_blank" [disabled]="!store.online()">
+            <ion-icon slot="start" name="navigate-outline" />Localisation
+          </ion-button>
+          <ion-button (click)="open.set(open() === s.id ? '' : s.id)">
+            <ion-icon slot="start" name="calendar-outline" />Rendez-vous
+          </ion-button>
+        </div>
+
+        @if (!store.online()) { 
+          <small class="muted offline-map-note">Localisation disponible en ligne.</small> 
+        }
+
+        <!-- Sélection de créneau pour prise de RDV -->
+        @if (open() === s.id) {
+          <div class="slot-container">
+            @if (backend.configured) {
+              <label>Nom complet
+                <input type="text" [value]="fullName()" (input)="fullName.set($any($event.target).value)" autocomplete="name" />
+              </label>
+              <label>Téléphone
+                <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" />
+              </label>
+              <label>Créneau souhaité
+                <input type="text" placeholder="Ex. mardi matin" [value]="appointmentSlot()" (input)="appointmentSlot.set($any($event.target).value)" />
+              </label>
+            } @else {
+              <b>Choisir un créneau</b>
+              <div class="chips-wrapper">
+                @for (sl of s.slots; track sl.id) {
+                  <ion-chip [outline]="slot() !== sl.label" color="primary" (click)="slot.set(sl.label)">
+                    {{ sl.label }}
+                  </ion-chip>
+                }
+              </div>
+            }
+            <ion-button expand="block" [disabled]="(!backend.configured && !slot()) || (backend.configured && !store.online())" (click)="book(s, backend.configured ? appointmentSlot() : slot())">
+              Confirmer le rendez-vous
+            </ion-button>
+          </div>
+        }
+      </div>
+    } @empty { 
+      <p class="disclaimer">Aucune structure trouvée.</p> 
+    }
+    
+    @if (!backend.configured) {
+      <p class="disclaimer">Liste de démonstration, consultable hors connexion (données fictives).</p>
+    }
+
+  } @else {
+    <!-- Vue Dépistages du mois -->
+    <div class="card muted info-banner">
+      <ion-icon name="megaphone-outline" /> 
+      <span>Dépistages programmés ce mois-ci. Inscrivez-vous en un clic.</span>
+    </div>
+
+    @for (d of events(); track d.id) {
+      <div class="card event-card" [style.opacity]="eventEnded(d.ends_at) ? .55 : 1">
+        <small class="muted">
+          {{ dateLabel(d.starts_at) }} · {{ eventTime(d.starts_at) }}
+          @if (eventEnded(d.ends_at)) { · terminé }
+        </small>
+        <h3>{{ d.title }}</h3>
+        <p class="muted">
+          {{ d.structures?.name }} — {{ d.structures?.city }} ·
+          {{ d.free ? 'Gratuit' : 'Payant' }}
+        </p>
+        @if (d.description) { <p class="muted">{{ d.description }}</p> }
+        @if (backend.configured) {
+          <div class="registration-fields">
+            <label>Nom complet
+              <input type="text" [value]="fullName()" (input)="fullName.set($any($event.target).value)" autocomplete="name" />
+            </label>
+            <label>Téléphone
+              <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" />
+            </label>
+          </div>
+        }
+
+        <div class="button-group">
+          <ion-button [disabled]="eventEnded(d.ends_at) || (backend.configured && !store.online())" (click)="registerScreening(d)">
+            <ion-icon slot="start" name="calendar-outline" />S’inscrire
+          </ion-button>
+          <ion-button fill="outline" [href]="eventMapUrl(d)" target="_blank" [disabled]="!store.online()">
+            <ion-icon slot="start" name="navigate-outline" />Localisation
+          </ion-button>
+        </div>
+      </div>
+    } @empty {
+      <p class="disclaimer">Aucun dépistage n’est programmé pour le reste du mois.</p>
+    }
+  }
+</ion-content>

@@ -1,0 +1,26 @@
+<ion-tabs>
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="info">
+      <ion-icon name="play-circle-outline" />
+      <ion-label>Infos</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="questionnaire">
+      <ion-icon name="clipboard-outline" />
+      <ion-label>Évaluer</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="contact">
+      <ion-icon name="person-circle-outline" />
+      <ion-label>Pros</ion-label>
+      @if (store.pendingCount()) { 
+        <ion-badge color="warning">{{ store.pendingCount() }}</ion-badge> 
+      }
+    </ion-tab-button>
+
+    <ion-tab-button tab="structures">
+      <ion-icon name="location-outline" />
+      <ion-label>Lieux</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

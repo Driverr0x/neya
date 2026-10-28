@@ -1,0 +1,36 @@
+<ion-content [fullscreen]="true">
+  <main class="logo-page">
+    <div class="logo-stage">
+      <span class="logo-halo" aria-hidden="true"></span>
+      <img
+        class="logo-image"
+        [src]="logoSrc"
+        [style.width.px]="size"
+        [style.height.px]="size"
+        alt="Logo NEYA"
+      />
+    </div>
+
+    <h1>NEYA</h1>
+    <p>Informer. Comprendre. Orienter. Agir.</p>
+    <label class="language-picker">
+      Langue de l’application
+      <ion-select
+        aria-label="Langue de l’application"
+        [value]="language"
+        (ionChange)="setLanguage($event.detail.value)"
+      >
+        @for (option of languages; track option.code) {
+          <ion-select-option [value]="option.code">{{ option.label }}</ion-select-option>
+        }
+      </ion-select>
+    </label>
+    @if (audioMessage()) {
+      <p class="audio-message" role="status">{{ audioMessage() }}</p>
+    }
+    <ion-button class="continue-button" routerLink="/tabs/info">Continuer</ion-button>
+    <a class="professional-link" routerLink="/professional-access">
+      Vous représentez une structure ou êtes médecin ? Inscrivez-vous
+    </a>
+  </main>
+</ion-content>

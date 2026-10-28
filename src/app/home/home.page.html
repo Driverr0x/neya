@@ -1,20 +1,65 @@
-<ion-header [translucent]="true">
+<ion-header>
+  <app-brand-header />
   <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+    <ion-title>Accueil</ion-title>
+    <ion-chip 
+      slot="end" 
+      [class]="store.online() ? 'chip-online' : 'chip-offline'" 
+      (click)="store.toggleOffline()" 
+      title="Touchez pour simuler le mode hors ligne (démo)">
+      <ion-icon [name]="store.online() ? 'wifi-outline' : 'cloud-offline-outline'" />
+      <ion-label>{{ store.online() ? 'En ligne' : 'Hors ligne' }}</ion-label>
+    </ion-chip>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+<ion-content>
+  <!-- En-tête de présentation -->
+  <div class="card intro-card">
+    <h2>Informer. Comprendre. Orienter. Agir.</h2>
+    <p class="intro-text">Des vidéos de professionnels dans votre langue, un contact direct et un rendez-vous en quelques clics.</p>
   </div>
+
+  <!-- Rappel de dépistage actif-->
+  @if (rem.active(); as r) {
+    <div class="card reminder-card" [style.border-left]="'8px solid var(--neya-l' + r.level + ')'">
+      <h3 [style.color]="'var(--neya-l' + r.level + ')'">Rappel dépistage — niveau {{ r.level }}</h3>
+      <p>{{ rem.message() }}</p>
+      <p class="muted">
+        Prochain rappel : {{ rem.daysToNext() === 0 ? 'maintenant' : 'dans ' + rem.daysToNext() + ' jour(s)' }} 
+        (tous les {{ r.level === 3 ? 2 : 7 }} jours).
+      </p>
+      <ion-button routerLink="/tabs/structures">Voir les dépistages et prendre rendez-vous</ion-button>
+    </div>
+  }
+
+  <!-- Boutons principaux du menu -->
+  <div class="menu-container">
+    <ion-button expand="block" class="big-btn" routerLink="/tabs/info">
+      <ion-icon slot="start" name="book-outline" />M’informer
+    </ion-button>
+    <ion-button expand="block" class="big-btn" routerLink="/tabs/questionnaire">
+      <ion-icon slot="start" name="clipboard-outline" />Évaluer ma situation
+    </ion-button>
+    <ion-button expand="block" class="big-btn" routerLink="/tabs/contact">
+      <ion-icon slot="start" name="chatbubble-ellipses-outline" />Contacter un professionnel
+    </ion-button>
+    <ion-button expand="block" class="big-btn" routerLink="/tabs/structures">
+      <ion-icon slot="start" name="location-outline" />Trouver une structure de santé
+    </ion-button>
+  </div>
+
+  <!-- Avertissement mode hors ligne -->
+  @if (!store.online()) {
+    <div class="card muted offline-warning">
+      <ion-icon name="cloud-offline-outline" /> 
+      Mode hors ligne : contenus, questionnaire et structures restent accessibles. Vos messages et rendez-vous seront envoyés au retour de la connexion.
+    </div>
+  }
+
+  <!-- Disclaimer médical -->
+  <p class="disclaimer">
+    <ion-icon name="shield-checkmark-outline" /> 
+    NEYA ne pose aucun diagnostic. Seul un professionnel de santé le peut. Données de démonstration fictives.
+  </p>
 </ion-content>

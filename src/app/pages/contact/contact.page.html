@@ -1,0 +1,88 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>{{ selectedPro()?.name ?? 'Contacter un professionnel' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (directoryError()) {
+    <div class="card" role="alert">{{ directoryError() }}</div>
+  }
+  @if (selectedPro(); as professional) {
+    <div class="card professional-card">
+      <ion-icon name="person-circle-outline" color="primary" class="pro-avatar" />
+      <h2>{{ professional.name }}</h2>
+      <ion-badge [color]="store.online() ? 'success' : 'medium'">
+        {{ store.online() ? 'Messagerie disponible' : 'Mode hors ligne' }}
+      </ion-badge>
+      <p>{{ spec[professional.specialty] }} · {{ professional.structure }} · {{ professional.city }}</p>
+      <p class="muted">{{ professional.bio }}</p>
+      <p class="muted">Langues : {{ langs(professional) }} · Réponse {{ professional.responseDelay }}</p>
+      @if (store.online()) {
+        <ion-button expand="block" [routerLink]="['/tabs/messages', professional.id]">
+          <ion-icon slot="start" name="chatbubble-ellipses-outline" />
+          Envoyer un message
+        </ion-button>
+      } @else {
+        <p class="hospital-phone">
+          Appel direct au {{ professional.structure }} :
+          <strong>{{ professional.phone }}</strong>
+        </p>
+        <ion-button expand="block" [href]="phoneHref(professional.phone)">
+          <ion-icon slot="start" name="call-outline" />
+          Appeler l’hôpital
+        </ion-button>
+      }
+      <ion-button expand="block" fill="outline" routerLink="/tabs/contact">
+        Retour aux professionnels
+      </ion-button>
+    </div>
+  } @else if (routeProId()) {
+    <div class="card">
+      <h3>Professionnel introuvable</h3>
+      <p class="muted">Ce profil n’est pas disponible.</p>
+      <ion-button expand="block" routerLink="/tabs/contact">Retour aux professionnels</ion-button>
+    </div>
+  } @else {
+    @if (fromOrientation()) { 
+      <div class="card orientation-notice">
+        <ion-icon name="sparkles-outline" /> 
+        <span>Classés selon votre orientation (spécialité et langue).</span>
+      </div> 
+    }
+
+    <ion-list inset="true">
+      @for (p of pros(); track p.id; let i = $index) {
+        <ion-item [routerLink]="['/tabs/contact', p.id]" detail="true">
+          <ion-icon slot="start" name="person-circle-outline" color="primary" class="pro-avatar" />
+          <ion-label>
+            <h3>{{ p.name }}</h3>
+            <p>{{ spec[p.specialty] }} · {{ p.structure }} · {{ p.city }}</p>
+            <p>Langues : {{ langs(p) }} · Réponse {{ p.responseDelay }}</p>
+          </ion-label>
+          @if (fromOrientation() && i === 0) { 
+            <ion-badge color="primary">Conseillé</ion-badge> 
+          }
+        </ion-item>
+      }
+    </ion-list>
+    @if (pros().length === 0) {
+      <p class="disclaimer">Aucun médecin n’est actuellement disponible dans cette liste.</p>
+    }
+
+    @if (store.queue().length) {
+      <div class="card queue-card">
+        <h3>Mes demandes</h3>
+        @for (q of store.queue(); track q.id) {
+          <p class="muted request-item">
+            {{ q.kind === 'message' ? ' Message' : 'RDV ' + q.slot }} → {{ q.name ?? q.proName }} ·
+            <b [style.color]="q.status === 'sent' ? 'var(--neya-l1, #28a745)' : 'var(--neya-l2, #ffc107)'">
+              {{ q.status === 'sent' ? 'envoyé' : 'en attente d’envoi' }}
+            </b>
+          </p>
+        }
+      </div>
+    }
+  }
+</ion-content>

@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 16px 4px;
+  color: var(--ion-color-primary, #d6336c);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+}

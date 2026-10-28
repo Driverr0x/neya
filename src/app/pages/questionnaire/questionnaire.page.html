@@ -1,0 +1,137 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>Évaluer ma situation</ion-title>
+    @if (store.result() || step() > 0) { 
+      <ion-buttons slot="end">
+        <ion-button (click)="restart()">Recommencer</ion-button>
+      </ion-buttons> 
+    }
+  </ion-toolbar>
+  @if (!store.result() && !loading()) { 
+    <ion-progress-bar [value]="step() / questions().length" /> 
+  }
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (loading()) {
+    <div class="card loading-card">
+      <ion-spinner />
+      <p class="muted">Analyse de vos réponses…</p>
+    </div>
+  } @else if (store.result(); as r) {
+    <!-- Affichage des résultats selon les 3 niveaux -->
+    <div class="card result-card" [style.border-left]="'8px solid var(--neya-l' + r.level + ')'">
+      <small class="muted">NIVEAU {{ r.level }}</small>
+      <h2 [style.color]="'var(--neya-l' + r.level + ')'">{{ r.title.toUpperCase() }}</h2>
+      <p>{{ r.message }}</p>
+      
+      @if (r.simpleExplanation) {
+        <div class="simple-explanation">
+          <strong>En termes simples</strong>
+          <p>{{ r.simpleExplanation }}</p>
+          <small class="muted">
+            {{ r.explanationSource === 'ai' ? 'Reformulation par IA ; orientation médicale établie par les règles NEYA.' : 'Explication de démonstration ; aucune donnée envoyée à une IA.' }}
+          </small>
+        </div>
+      }
+
+      @if (r.explanationSource !== 'ai') {
+        <div class="ai-consent">
+          <label>
+            <input type="checkbox" [checked]="aiConsent()" (change)="aiConsent.set($any($event.target).checked)" />
+            J’accepte d’envoyer mon résultat et ma langue préférée au service IA pour obtenir une reformulation. Cette IA ne pose pas de diagnostic.
+          </label>
+          @if (interpretation.aiAvailable) {
+            <ion-button fill="outline" [disabled]="!aiConsent() || aiLoading()" (click)="requestAiExplanation()">
+              {{ aiLoading() ? 'Reformulation…' : 'Demander une explication IA' }}
+            </ion-button>
+          } @else {
+            <small class="muted">Le service IA sera disponible après configuration du backend.</small>
+          }
+          @if (aiError()) { <p class="ai-error" role="alert">{{ aiError() }}</p> }
+        </div>
+      }
+      
+      <ul class="muted reasons-list">
+        @for (x of r.reasons; track x) { 
+          <li>{{ x }}</li> 
+        }
+      </ul>
+      
+      <small class="muted">Orientation établie par les règles NEYA.</small>
+    </div>
+    <ion-button expand="block" fill="outline" (click)="readResult()">
+      <ion-icon slot="start" name="volume-high-outline" />
+      Écouter mon résultat
+    </ion-button>
+    @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+
+    <!-- Actions d'orientation -->
+    <div class="action-buttons">
+      @if (r.level >= 2) {
+        <ion-button expand="block" class="big-btn" [routerLink]="'/tabs/contact'" [queryParams]="{ specialty: r.specialty, lang: r.language, from: 'orientation' }">
+          <ion-icon slot="start" name="chatbubbles-outline" />
+          Contacter {{ r.specialty ? 'un(e) ' + spec[r.specialty].toLowerCase() : 'un professionnel' }}
+        </ion-button>
+      }
+      
+      @if (r.level >= 2) { 
+        <ion-button expand="block" class="big-btn" fill="outline" routerLink="/tabs/structures">
+          <ion-icon slot="start" name="calendar-outline" />
+          Prendre rendez-vous dans une structure
+        </ion-button> 
+      }
+      
+      <ion-button expand="block" class="big-btn" [fill]="r.level >= 2 ? 'outline' : 'solid'" [routerLink]="['/tabs/info', r.videoId]">
+        <ion-icon slot="start" name="play-circle-outline" />
+        Voir : {{ videoTitle(r.videoId) }}
+      </ion-button>
+    </div>
+
+    <!-- Rappel / Disclaimer médical obligatoire -->
+    <p class="disclaimer">
+      Ce résultat n’est pas un diagnostic. Seul un professionnel de santé peut poser un diagnostic.
+    </p>
+
+  } @else {
+    <!-- Affichage des questions du questionnaire adaptatif -->
+    @if (q(); as cur) {
+      <div class="card question-card">
+        <small class="muted">Question {{ step() + 1 }} / {{ questions().length }}</small>
+        <div class="question-illustration" aria-hidden="true">
+          <ion-icon [name]="cur.id === 'age' ? 'calendar-outline' : cur.id === 'symptoms' ? 'body-outline' : cur.id === 'language' ? 'chatbubbles-outline' : 'location-outline'" />
+        </div>
+        <h2>{{ cur.title }}</h2>
+        
+        @if (cur.hint) { 
+          <p class="muted">{{ cur.hint }}</p> 
+        }
+
+        <ion-button expand="block" fill="outline" class="listen-button" (click)="readQuestion()">
+          <ion-icon slot="start" name="volume-high-outline" />
+          Écouter la question et les choix
+        </ion-button>
+        @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+        
+        @for (o of cur.options; track o.value) {
+          <ion-button expand="block" class="big-btn" [attr.aria-label]="o.label" [fill]="isSel(cur, o.value) ? 'solid' : 'outline'" (click)="pick(cur, o.value)">
+            <ion-icon slot="start" [name]="o.icon" />{{ o.label }}
+          </ion-button>
+        }
+        
+        @if (cur.multi) { 
+          <ion-button expand="block" class="big-btn" color="dark" [disabled]="!answers().symptoms?.length" (click)="next()">
+            Continuer
+          </ion-button> 
+        }
+      </div>
+
+      @if (step() > 0) { 
+        <ion-button fill="clear" (click)="step.set(step() - 1)">
+          ← Retour
+        </ion-button> 
+      }
+    }
+  }
+</ion-content>

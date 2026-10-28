@@ -1,0 +1,86 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>{{ video()?.title ?? 'M’informer' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (loadError()) { <div class="card info-card" role="alert">{{ loadError() }}</div> }
+  @if (video(); as selectedVideo) {
+    <div class="card info-card">
+      <video controls playsinline preload="metadata" [src]="selectedVideo.src">
+        Votre navigateur ne prend pas en charge la lecture vidéo.
+      </video>
+      <p class="muted">{{ selectedVideo.author }} · {{ selectedVideo.duration }} · {{ label[selectedVideo.lang] }}</p>
+      <p>{{ selectedVideo.description }}</p>
+      <ion-button expand="block" fill="outline" (click)="readVideo(selectedVideo)">
+        <ion-icon slot="start" name="volume-high-outline" />
+        Écouter la description
+      </ion-button>
+      @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+      <ion-button expand="block" routerLink="/tabs/info">Retour aux vidéos</ion-button>
+    </div>
+  } @else if (videoId()) {
+    <div class="card info-card">
+      <h3>Vidéo introuvable</h3>
+      <p class="muted">Cette vidéo n’est pas disponible.</p>
+      <ion-button expand="block" routerLink="/tabs/info">Retour aux vidéos</ion-button>
+    </div>
+  } @else {
+    <div class="card info-card intro-card">
+      <h3>Le cancer du sein, en bref</h3>
+      <p class="muted">
+        Le cancer du sein est plus facile à soigner quand il est repéré tôt. Connaître les signes et se faire dépister aident à agir vite.
+      </p>
+      <p class="muted">Faites défiler les vidéos vers le haut. Les textes peuvent être lus à voix haute.</p>
+    </div>
+
+    <p class="language-note">Vidéos en {{ label[lang] }}</p>
+    @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+    @if (filteredVideos.length) {
+      <div class="video-feed" aria-label="Vidéos d’information dans la langue choisie">
+        @for (v of filteredVideos; track v.id) {
+          <article class="video-card" [class.is-playing]="playingVideoId() === v.id">
+            <video
+              controls
+              playsinline
+              preload="metadata"
+              [src]="v.src"
+              [attr.aria-label]="v.title"
+              (play)="onVideoPlay(v.id, $event)"
+              (pause)="onVideoStopped($event)"
+              (ended)="onVideoStopped($event)"
+            >
+              Votre navigateur ne prend pas en charge la lecture vidéo.
+            </video>
+            <div class="video-copy">
+              <p class="video-meta">
+                {{ v.author }} · {{ v.duration }}
+                @if (playingVideoId() === v.id) {
+                  <span class="playing-indicator" aria-live="polite"> · Lecture en cours</span>
+                }
+              </p>
+              <h2>{{ v.title }}</h2>
+              <p>{{ v.description }}</p>
+              <div class="video-actions">
+                <ion-button fill="outline" (click)="readVideo(v)">
+                  <ion-icon slot="start" name="volume-high-outline" />
+                  Écouter le texte
+                </ion-button>
+                <ion-button fill="clear" [routerLink]="['/tabs/info', v.id]" aria-label="Ouvrir cette vidéo">
+                  Détails
+                </ion-button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="card info-card">
+        <h3>Aucune vidéo dans cette langue</h3>
+        <p class="muted">Aucune vidéo n’est encore disponible en {{ label[lang] }}.</p>
+      </div>
+    }
+  }
+</ion-content>

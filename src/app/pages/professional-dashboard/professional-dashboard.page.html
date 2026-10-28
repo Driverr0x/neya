@@ -1,0 +1,162 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>Espace professionnel</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main class="dashboard">
+    <div class="dashboard-top">
+      <div>
+        <p class="eyebrow">ESPACE PROFESSIONNEL</p>
+        <h1>{{ profile()?.display_name || 'Bienvenue' }}</h1>
+      </div>
+      <button class="secondary-button" type="button" (click)="signOut()">Déconnexion</button>
+    </div>
+
+    @if (loading()) {
+      <p class="status-card">Chargement de votre espace…</p>
+    } @else if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    } @else if (notice()) {
+      <p class="notice" role="status">{{ notice() }}</p>
+    }
+
+    @if (profile()?.role === 'structure_admin') {
+      @if (structure(); as currentStructure) {
+        @if (currentStructure.approval_status !== 'approved') {
+          <section class="panel pending-panel">
+            <h2>Demande en cours de vérification</h2>
+            <p>Le compte de {{ currentStructure.name }} est en attente de validation par l’équipe NEYA. Les invitations, rendez-vous et publications seront disponibles après cette étape.</p>
+            <span class="status-pill">{{ currentStructure.approval_status }}</span>
+          </section>
+        } @else {
+          <section class="panel">
+            <div class="section-heading">
+              <div><p class="eyebrow">ÉQUIPE</p><h2>Médecins</h2></div>
+              <button class="primary-button" type="button" [disabled]="busy()" (click)="createInvite()">Créer un code d’invitation</button>
+            </div>
+            @if (inviteCode()) {
+              <p class="invite-code">Code à transmettre au médecin : <strong>{{ inviteCode() }}</strong></p>
+            }
+            @for (doctor of doctors(); track doctor.id) {
+              <article class="list-row">
+                <div><strong>{{ doctor.display_name }}</strong><p>{{ doctor.specialty || 'Spécialité non renseignée' }} · {{ doctor.status }}</p></div>
+                <span>{{ doctor.phone }}</span>
+              </article>
+            } @empty {
+              <p class="empty">Aucun médecin n’est encore associé à cette structure.</p>
+            }
+          </section>
+
+          <section class="panel">
+            <p class="eyebrow">ACTIVITÉ</p>
+            <h2>Demandes de rendez-vous et de dépistage</h2>
+            @for (booking of bookings(); track booking.id) {
+              <article class="list-row booking-row">
+                <div>
+                  <strong>{{ booking.full_name }}</strong>
+                  <p>
+                    @if (booking.kind === 'screening') {
+                      {{ booking.screening_events?.title || 'Dépistage' }} · {{ booking.screening_events?.starts_at ? formatTime(booking.screening_events.starts_at) : '' }}
+                    } @else {
+                      Rendez-vous · {{ booking.slot_label || 'Horaire à confirmer' }}
+                    }
+                  </p>
+                  <a [href]="'tel:' + booking.phone">{{ booking.phone }}</a>
+                </div>
+                <div class="booking-actions">
+                  <span class="status-pill">{{ booking.status }}</span>
+                  @if (booking.status === 'requested') {
+                    <button type="button" (click)="updateBooking(booking, 'confirmed')">Confirmer</button>
+                    <button type="button" class="text-button" (click)="updateBooking(booking, 'cancelled')">Annuler</button>
+                  }
+                </div>
+              </article>
+            } @empty {
+              <p class="empty">Aucune demande pour le moment.</p>
+            }
+          </section>
+
+          <section class="panel">
+            <p class="eyebrow">PRÉVENTION</p>
+            <h2>Programmer un dépistage</h2>
+            <label>Titre<input type="text" [value]="screeningTitle()" (input)="screeningTitle.set($any($event.target).value)" /></label>
+            <label>Description<textarea rows="2" [value]="screeningDescription()" (input)="screeningDescription.set($any($event.target).value)"></textarea></label>
+            <label>Lieu<input type="text" [value]="screeningLocation()" (input)="screeningLocation.set($any($event.target).value)" /></label>
+            <div class="form-grid">
+              <label>Début<input type="datetime-local" [value]="screeningStartsAt()" (input)="screeningStartsAt.set($any($event.target).value)" /></label>
+              <label>Fin<input type="datetime-local" [value]="screeningEndsAt()" (input)="screeningEndsAt.set($any($event.target).value)" /></label>
+            </div>
+            <button class="primary-button" type="button" [disabled]="busy()" (click)="createScreening()">Publier le dépistage</button>
+          </section>
+
+          <section class="panel">
+            <p class="eyebrow">CONTENUS</p>
+            <h2>Vidéos des médecins</h2>
+            @for (video of videos(); track video.id) {
+              <article class="video-row">
+                @if (video.videoUrl) { <video controls playsinline preload="metadata" [src]="video.videoUrl"></video> }
+                <div><strong>{{ video.title }}</strong><p>{{ video.description }} · {{ video.language }} · {{ video.published ? 'publiée' : 'brouillon' }}</p></div>
+              </article>
+            } @empty {
+              <p class="empty">Aucune vidéo publiée.</p>
+            }
+          </section>
+        }
+      }
+    } @else if (profile()?.role === 'doctor') {
+      <section class="panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">MESSAGERIE</p><h2>Conversations des utilisateurs</h2></div>
+          <button class="secondary-button" type="button" [disabled]="loading()" (click)="load()">Actualiser</button>
+        </div>
+        @for (conversation of conversations(); track conversation.id) {
+          <button
+            type="button"
+            class="conversation-choice"
+            [class.active]="selectedConversationId() === conversation.id"
+            (click)="selectConversation(conversation)"
+          >
+            Conversation · {{ formatTime(conversation.created_at) }} · {{ (conversation.messages || []).length }} message(s)
+          </button>
+        } @empty {
+          <p class="empty">Aucune conversation pour le moment.</p>
+        }
+
+        @if (selectedConversationId()) {
+          <div class="conversation-messages" aria-live="polite">
+            @for (message of selectedConversation()?.messages || []; track message.id) {
+              <article class="message-item">
+                <small>{{ message.sender_id === profile()?.id ? 'Vous' : 'Utilisateur' }} · {{ formatTime(message.created_at) }}</small>
+                @if (message.content) { <p>{{ message.content }}</p> }
+                @if (message.audioUrl) { <audio controls [src]="message.audioUrl" aria-label="Message vocal"></audio> }
+              </article>
+            } @empty {
+              <p class="empty">Cette conversation ne contient pas encore de message.</p>
+            }
+            <label>Votre réponse<textarea rows="3" [value]="replyDraft()" (input)="replyDraft.set($any($event.target).value)"></textarea></label>
+            <button class="primary-button" type="button" [disabled]="busy() || !replyDraft().trim()" (click)="sendReply()">Envoyer la réponse</button>
+          </div>
+        }
+      </section>
+
+      <section class="panel">
+        <p class="eyebrow">PRÉVENTION</p>
+        <h2>Publier une vidéo</h2>
+        <label>Titre<input type="text" [value]="videoTitle()" (input)="videoTitle.set($any($event.target).value)" /></label>
+        <label>Description<textarea rows="3" [value]="videoDescription()" (input)="videoDescription.set($any($event.target).value)"></textarea></label>
+        <label>Langue
+          <select [value]="videoLanguage()" (change)="videoLanguage.set($any($event.target).value)">
+            <option value="fr">Français</option><option value="moore">Mooré</option><option value="dioula">Dioula</option>
+          </select>
+        </label>
+        <label>Fichier vidéo (MP4, WebM ou MOV · 100 Mo maximum)
+          <input type="file" accept="video/mp4,video/webm,video/quicktime" (change)="fileSelected($event)" />
+        </label>
+        <button class="primary-button" type="button" [disabled]="busy()" (click)="uploadVideo()">Publier la vidéo</button>
+      </section>
+    }
+  </main>
+</ion-content>

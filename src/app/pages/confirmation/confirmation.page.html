@@ -1,0 +1,35 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>Confirmation</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Carte de statut de confirmation -->
+  <div class="card confirmation-card">
+    <ion-icon 
+      [name]="pending ? 'time-outline' : 'checkmark-circle'" 
+      [style.color]="pending ? 'var(--neya-salmon)' : 'var(--neya-pink)'" 
+      class="confirmation-icon" />
+      
+    <h2>{{ title }}</h2>
+    
+    <p class="confirmation-desc">
+      {{ description }}
+    </p>
+
+    @if (pending) { 
+      <p class="muted offline-notice">
+        Vous êtes hors ligne. Votre demande partira automatiquement dès le retour de la connexion.
+      </p> 
+    }
+  </div>
+
+  <!-- Bouton de retour aux informations -->
+  <div class="action-container">
+    <ion-button expand="block" class="big-btn" routerLink="/tabs/info">
+      Retour aux infos
+    </ion-button>
+  </div>
+</ion-content>

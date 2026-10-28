@@ -1,0 +1,42 @@
+.confirmation-card {
+  text-align: center;
+  margin: 24px 16px;
+  padding: 32px 16px;
+  background: var(--neya-surface);
+  border-radius: 16px;
+  box-shadow: var(--neya-shadow);
+
+  h2 {
+    margin-top: 16px;
+    font-size: 1.3rem;
+    font-weight: bold;
+  }
+}
+
+.confirmation-icon {
+  font-size: 72px;
+}
+
+.confirmation-desc {
+  margin: 12px 0;
+  color: var(--neya-text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.offline-notice {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--neya-text);
+  background-color: var(--neya-beige);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.action-container {
+  padding: 0 16px;
+}
+
+.muted {
+  color: var(--neya-muted);
+}

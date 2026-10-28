@@ -1,0 +1,11 @@
+[functions.register-structure]
+verify_jwt = true
+
+[functions.register-doctor]
+verify_jwt = true
+
+[functions.create-doctor-invite]
+verify_jwt = true
+
+[functions.explain-result]
+verify_jwt = true

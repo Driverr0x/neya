@@ -1,0 +1,267 @@
+.dashboard {
+  width: min(100%, 860px);
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.dashboard-top,
+.section-heading,
+.list-row,
+.booking-row,
+.video-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-top {
+  margin-bottom: 18px;
+
+  h1 {
+    margin: 4px 0;
+    color: var(--neya-text);
+    font-size: 1.6rem;
+  }
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: var(--neya-pink);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.panel,
+.status-card,
+.notice,
+.error {
+  margin: 14px 0;
+  padding: 18px;
+  border: 1px solid var(--neya-beige);
+  border-radius: 16px;
+  background: var(--neya-surface);
+  box-shadow: var(--neya-shadow);
+}
+
+.panel {
+  h2 {
+    margin: 0 0 14px;
+    color: var(--neya-text);
+    font-size: 1.15rem;
+  }
+}
+
+.pending-panel {
+  background: var(--neya-beige);
+}
+
+.list-row {
+  padding: 12px 0;
+  border-top: 1px solid var(--neya-beige);
+
+  p {
+    margin: 4px 0;
+    color: var(--neya-muted);
+  }
+
+  a,
+  span {
+    color: var(--neya-muted);
+    font-size: 0.85rem;
+  }
+}
+
+.booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+
+  button {
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--neya-pink-soft);
+    color: var(--neya-pink);
+    font-weight: 700;
+  }
+}
+
+.status-pill {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--neya-beige);
+  color: var(--neya-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.invite-code {
+  overflow-wrap: anywhere;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--neya-pink-soft);
+}
+
+.panel > label {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+  color: var(--neya-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid var(--neya-beige-dark);
+    border-radius: 9px;
+    background: var(--neya-background);
+    color: var(--neya-text);
+    font: inherit;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+}
+
+.primary-button {
+  background: var(--neya-pink);
+  color: white;
+}
+
+.secondary-button {
+  background: var(--neya-pink-soft);
+  color: var(--neya-pink);
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+}
+
+.video-row {
+  align-items: flex-start;
+  padding: 12px 0;
+  border-top: 1px solid var(--neya-beige);
+
+  video {
+    width: min(40%, 220px);
+    border-radius: 10px;
+    background: #211a1d;
+  }
+
+  p {
+    color: var(--neya-muted);
+  }
+}
+
+.conversation-choice {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid var(--neya-beige);
+  border-radius: 10px;
+  background: var(--neya-background);
+  color: var(--neya-text);
+  text-align: left;
+}
+
+.conversation-choice.active {
+  border-color: var(--neya-pink);
+  background: var(--neya-pink-soft);
+}
+
+.conversation-messages {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--neya-beige);
+
+  label {
+    display: grid;
+    gap: 6px;
+    margin: 14px 0;
+    color: var(--neya-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  textarea {
+    padding: 10px;
+    border: 1px solid var(--neya-beige-dark);
+    border-radius: 9px;
+    background: var(--neya-background);
+    color: var(--neya-text);
+    font: inherit;
+  }
+}
+
+.message-item {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--neya-pink-soft);
+
+  small {
+    color: var(--neya-muted);
+  }
+
+  p {
+    margin: 5px 0 0;
+    color: var(--neya-text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  audio {
+    display: block;
+    max-width: 100%;
+    margin-top: 6px;
+  }
+}
+
+.empty {
+  color: var(--neya-muted);
+}
+
+.notice {
+  color: var(--neya-text);
+  background: var(--neya-pink-soft);
+}
+
+.error {
+  color: #8f2e2e;
+  background: #fff0ed;
+}
+
+@media (max-width: 520px) {
+  .section-heading,
+  .booking-row,
+  .video-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .video-row video {
+    width: 100%;
+  }
+}

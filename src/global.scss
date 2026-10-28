@@ -32,6 +32,41 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* Keep the warm NEYA palette consistent with the design tokens on every device. */
+
+html,
+body,
+ion-app {
+  background: var(--neya-background);
+  color: var(--neya-text);
+}
+
+ion-content {
+  --background: var(--neya-background);
+  --color: var(--neya-text);
+}
+
+ion-toolbar {
+  --background: var(--neya-surface);
+  --color: var(--neya-text);
+  --border-color: var(--neya-beige);
+}
+
+ion-title {
+  color: var(--neya-text);
+}
+
+ion-card {
+  --background: var(--neya-surface);
+  --color: var(--neya-text);
+}
+
+ion-segment {
+  --background: var(--neya-pink-soft);
+}
+
+ion-segment-button {
+  --color: var(--neya-muted);
+  --color-checked: var(--neya-pink);
+  --indicator-color: var(--neya-surface);
+}

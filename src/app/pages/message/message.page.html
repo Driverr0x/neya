@@ -1,0 +1,127 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>{{ professional()?.name ?? 'Messages' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="messages-page">
+  @if (professional(); as pro) {
+    @if (store.online()) {
+      <section class="conversation-heading">
+        <div class="avatar">{{ pro.name.charAt(0) }}</div>
+        <div>
+          <h2>{{ pro.name }}</h2>
+          <p>{{ specialties[pro.specialty] }} · Réponse {{ pro.responseDelay }}</p>
+        </div>
+      </section>
+
+      <div class="chat-history" aria-live="polite">
+        @if (messageError()) { <p class="recording-error" role="alert">{{ messageError() }}</p> }
+        <p class="date-divider">Aujourd’hui</p>
+        @if (conversation().length === 0) {
+          <div class="empty-conversation">
+            <ion-icon name="lock-closed-outline" />
+            <p>Votre échange avec {{ pro.name }} commence ici.</p>
+            <small>Vous pouvez lui écrire directement.</small>
+          </div>
+        }
+        @for (message of conversation(); track message.id) {
+          <article class="message-bubble">
+            @if (message.type === 'audio' && message.audioUrl) {
+              <audio controls [src]="message.audioUrl" aria-label="Message vocal"></audio>
+            } @else {
+              <p>{{ message.content }}</p>
+            }
+            <small>{{ formatTime(message.createdAt) }} · {{ message.status === 'sent' ? 'Envoyé' : 'En attente' }}</small>
+          </article>
+        }
+      </div>
+
+    } @else {
+      <div class="offline-chat">
+        <ion-icon name="cloud-offline-outline" />
+        <h2>Messagerie indisponible hors ligne</h2>
+        <p>Pour joindre {{ pro.name }}, appelez le numéro de son établissement.</p>
+        <ion-button expand="block" [href]="phoneHref(pro.phone)">
+          <ion-icon slot="start" name="call-outline" />
+          Appeler {{ pro.structure }}
+        </ion-button>
+      </div>
+    }
+  } @else if (proId()) {
+    <div class="offline-chat">
+      <h2>Professionnel introuvable</h2>
+      <p>Cette conversation n’est pas disponible.</p>
+      <ion-button expand="block" routerLink="/tabs/contact">Voir les professionnels</ion-button>
+    </div>
+  } @else {
+    <div class="inbox-empty">
+      <div class="empty-icon"><ion-icon name="chatbubbles-outline" /></div>
+      <h3>Choisissez un professionnel</h3>
+      <p>Pour démarrer une conversation, ouvrez le profil du professionnel que vous souhaitez contacter.</p>
+      <ion-button expand="block" routerLink="/tabs/contact">Voir les professionnels</ion-button>
+    </div>
+  }
+</ion-content>
+
+@if (professional(); as pro) {
+  @if (store.online()) {
+    <ion-footer class="chat-composer">
+      <ion-toolbar>
+        @if (isStartingRecording()) {
+          <p class="recording-status" aria-live="polite">Connexion au microphone…</p>
+        } @else if (isRecording()) {
+          <div class="recording-controls">
+            <span aria-live="polite">Enregistrement en cours…</span>
+            <ion-button color="danger" (click)="stopRecording()">
+              <ion-icon slot="start" name="stop-circle-outline" />
+              Arrêter
+            </ion-button>
+            <ion-button fill="clear" (click)="cancelAudio()">Annuler</ion-button>
+          </div>
+        } @else if (recordedAudio(); as recording) {
+          <div class="audio-preview">
+            <audio controls [src]="recording.url" aria-label="Écouter l’audio avant envoi"></audio>
+            <ion-button fill="clear" color="medium" aria-label="Supprimer l’audio" (click)="cancelAudio()">
+              Supprimer
+            </ion-button>
+            <ion-button class="audio-send-button" aria-label="Envoyer l’audio" (click)="sendAudio(pro)">
+              <ion-icon slot="start" name="send-outline" />
+              Envoyer
+            </ion-button>
+          </div>
+        }
+        @if (recordingError()) {
+          <p class="recording-error" role="alert">{{ recordingError() }}</p>
+        }
+        <ion-textarea
+          aria-label="Votre message"
+          placeholder="Écrire un message…"
+          [autoGrow]="true"
+          [rows]="1"
+          [value]="draft()"
+          (ionInput)="draft.set($any($event.detail).value ?? '')"
+        />
+        <ion-button
+          slot="end"
+          fill="clear"
+          aria-label="Enregistrer un audio"
+          [disabled]="isRecording() || isStartingRecording()"
+          (click)="startRecording()"
+        >
+          <ion-icon slot="icon-only" name="mic-outline" />
+        </ion-button>
+        <ion-button
+          slot="end"
+          class="send-button"
+          aria-label="Envoyer le message"
+          [disabled]="!draft().trim()"
+          (click)="sendMessage(pro)"
+        >
+          <ion-icon slot="icon-only" name="send-outline" />
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
+  }
+}

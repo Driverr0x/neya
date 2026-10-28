@@ -1,0 +1,81 @@
+.card {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid rgba(246, 130, 166, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(94, 47, 62, 0.07);
+}
+
+.orientation-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--neya-pink-soft);
+  color: #8c4059;
+  font-size: 0.95rem;
+
+  ion-icon {
+    font-size: 1.2rem;
+  }
+}
+
+.pro-avatar {
+  font-size: 58px;
+  color: var(--neya-pink);
+}
+
+.professional-card {
+  text-align: center;
+
+  h2 {
+    margin: 12px 0 8px;
+    color: var(--neya-text);
+    font-size: 1.35rem;
+  }
+
+  ion-badge {
+    margin-bottom: 6px;
+    --padding-start: 10px;
+    --padding-end: 10px;
+    border-radius: 999px;
+  }
+
+  ion-button {
+    margin-top: 12px;
+    --border-radius: 14px;
+    font-weight: 600;
+  }
+}
+
+.hospital-phone {
+  margin: 18px 0 8px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--neya-pink-soft);
+  color: #62434d;
+  line-height: 1.5;
+
+  strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--neya-text);
+  }
+}
+
+.queue-card {
+  h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: var(--ion-color-dark);
+  }
+}
+
+.request-item {
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: var(--neya-muted);
+}

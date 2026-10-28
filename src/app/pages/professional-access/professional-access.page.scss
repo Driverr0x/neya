@@ -1,0 +1,157 @@
+.access-page {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 12px 0 28px;
+}
+
+.back-link {
+  width: min(100%, 520px);
+  margin-bottom: 12px;
+  color: var(--neya-pink);
+  text-decoration: none;
+}
+
+.access-card {
+  width: min(100%, 520px);
+  padding: 24px;
+  border: 1px solid var(--neya-beige);
+  border-radius: 22px;
+  background: var(--neya-surface);
+  box-shadow: var(--neya-shadow);
+
+  h1 {
+    margin: 4px 0 8px;
+    color: var(--neya-text);
+    font-size: 1.65rem;
+  }
+
+  .intro,
+  .form-hint,
+  .privacy-note {
+    color: var(--neya-muted);
+    line-height: 1.5;
+  }
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--neya-pink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 22px 0;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--neya-pink-soft);
+
+  button {
+    min-height: 40px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--neya-muted);
+    font: inherit;
+  }
+
+  .selected {
+    background: var(--neya-surface);
+    color: var(--neya-pink);
+    box-shadow: 0 2px 8px rgba(86, 48, 61, 0.08);
+  }
+}
+
+.access-card > label {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0;
+  color: var(--neya-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--neya-beige-dark);
+    border-radius: 10px;
+    background: var(--neya-background);
+    color: var(--neya-text);
+    font: inherit;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid var(--neya-beige-dark);
+  border-radius: 10px;
+
+  legend {
+    padding: 0 4px;
+    color: var(--neya-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--neya-text);
+  font-size: 0.9rem;
+}
+
+.submit-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--neya-pink);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.notice,
+.error {
+  padding: 12px;
+  border-radius: 10px;
+  line-height: 1.45;
+}
+
+.notice {
+  background: var(--neya-pink-soft);
+  color: var(--neya-text);
+}
+
+.error {
+  background: #fff0ed;
+  color: #8f2e2e;
+}
+
+.privacy-note {
+  margin: 20px 0 0;
+  font-size: 0.78rem;
+}

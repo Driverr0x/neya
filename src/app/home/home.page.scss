@@ -1,27 +1,72 @@
-#container {
+// Styles spécifiques à la page d'accueil
+.card {
+  margin: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.intro-card {
+  background: linear-gradient(135deg, #e9788a, var(--neya-pink));
+  color: #fff;
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+
+  .intro-text {
+    margin: 0;
+    opacity: 0.9;
+  }
+}
+
+.reminder-card {
+  background: #fff;
+}
+
+.menu-container {
+  padding: 0 16px;
+
+  .big-btn {
+    margin-bottom: 12px;
+    --border-radius: 10px;
+    font-weight: 500;
+  }
+}
+
+.muted {
+  font-size: 0.9rem;
+  color: var(--neya-muted);
+}
+
+.offline-warning {
+  background: var(--neya-beige);
+  color: var(--neya-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.disclaimer {
   text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: var(--neya-muted);
+  padding: 0 24px 24px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+// Styles des puces d'état (En ligne / Hors ligne)
+.chip-online {
+  background-color: var(--neya-pink-soft);
+  color: var(--neya-pink);
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
+.chip-offline {
+  background-color: var(--neya-beige);
+  color: var(--neya-text);
 }

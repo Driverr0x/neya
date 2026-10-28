@@ -1,0 +1,29 @@
+<ion-header [translucent]="true">
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>Mode</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <section class="mode-card">
+    <div class="mode-icon">
+      <ion-icon [name]="store.online() ? 'wifi-outline' : 'cloud-offline-outline'" />
+    </div>
+    <h2>{{ store.online() ? 'Mode en ligne' : 'Mode hors ligne' }}</h2>
+    <p>
+      {{ store.online()
+        ? 'Vous pouvez envoyer un message à un professionnel depuis son profil.'
+        : 'La messagerie est désactivée. Vous pouvez appeler directement la structure de santé.' }}
+    </p>
+    <ion-item lines="none" class="mode-toggle">
+      <ion-label>Connexion internet disponible</ion-label>
+      <ion-toggle
+        slot="end"
+        [checked]="store.online()"
+        (ionChange)="setOnline($event.detail.checked)"
+        aria-label="Activer ou désactiver le mode en ligne"
+      />
+    </ion-item>
+  </section>
+</ion-content>
