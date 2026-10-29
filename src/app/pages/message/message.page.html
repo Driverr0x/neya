@@ -1,6 +1,9 @@
 <ion-header>
   <app-brand-header />
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="proId() ? '/tabs/contact/' + proId() : '/tabs/contact'" text="Retour" />
+    </ion-buttons>
     <ion-title>{{ professional()?.name ?? 'Messages' }}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -18,7 +21,6 @@
 
       <div class="chat-history" aria-live="polite">
         @if (messageError()) { <p class="recording-error" role="alert">{{ messageError() }}</p> }
-        <p class="date-divider">Aujourd’hui</p>
         @if (conversation().length === 0) {
           <div class="empty-conversation">
             <ion-icon name="lock-closed-outline" />
@@ -27,14 +29,24 @@
           </div>
         }
         @for (message of conversation(); track message.id) {
-          <article class="message-bubble">
+          <article class="message-bubble" [class.from-pro]="message.fromPro">
+            @if (message.fromPro) { <span class="sender">{{ pro.name }}</span> }
             @if (message.type === 'audio' && message.audioUrl) {
               <audio controls [src]="message.audioUrl" aria-label="Message vocal"></audio>
             } @else {
               <p>{{ message.content }}</p>
             }
-            <small>{{ formatTime(message.createdAt) }} · {{ message.status === 'sent' ? 'Envoyé' : 'En attente' }}</small>
+            <small>
+              {{ formatTime(message.createdAt) }}
+              @if (!message.fromPro) { · {{ message.status === 'sent' ? 'Envoyé' : 'En attente' }} }
+            </small>
           </article>
+        }
+        @if (suggestRecovery()) {
+          <a class="recovery-tip" routerLink="/tabs/recuperation">
+            <ion-icon name="key-outline" />
+            <span>Pour retrouver cette conversation si vous changez de téléphone, <strong>créez votre code de récupération</strong>.</span>
+          </a>
         }
       </div>
 

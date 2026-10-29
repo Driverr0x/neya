@@ -3,52 +3,77 @@
     <a class="back-link" routerLink="/logo">← Retour à l’accueil</a>
     <section class="access-card">
       <p class="eyebrow">ESPACE PROFESSIONNEL</p>
-      <h1>Bienvenue sur NEYA</h1>
-      <p class="intro">Un espace sécurisé pour les structures de santé et leurs médecins.</p>
+      <h1>{{ completing() ? 'Terminez votre inscription' : 'Bienvenue sur NEYA' }}</h1>
 
-      <nav class="mode-tabs" aria-label="Type d’accès">
-        <button type="button" [class.selected]="mode() === 'login'" (click)="chooseMode('login')">Connexion</button>
-        <button type="button" [class.selected]="mode() === 'structure'" (click)="chooseMode('structure')">Structure</button>
-        <button type="button" [class.selected]="mode() === 'doctor'" (click)="chooseMode('doctor')">Médecin</button>
-      </nav>
-
-      @if (mode() !== 'login') {
-        <p class="form-hint">
-          @if (mode() === 'structure') {
-            Créez un compte pour votre structure. Son accès sera activé après vérification.
+      @if (completing()) {
+        <p class="intro">
+          Votre compte <strong>{{ accountEmail() }}</strong> est créé.
+          @if (pendingRegistration() === 'doctor') {
+            Il reste à le rattacher à votre structure grâce au code d’invitation qu’elle vous a transmis.
           } @else {
-            Pour rejoindre une structure, demandez-lui un code d’invitation.
+            Il reste à enregistrer votre structure.
           }
+          Vérifiez les informations ci-dessous, puis touchez « Terminer mon inscription ».
         </p>
+      } @else {
+        <p class="intro">Un espace sécurisé pour les structures de santé et leurs médecins.</p>
       }
 
-      @if (mode() === 'structure' || (mode() === 'login' && pendingRegistration() === 'structure')) {
+      <div #feedback>
+        @if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+      </div>
+
+      @if (!completing()) {
+        <nav class="mode-tabs" aria-label="Type d’accès">
+          <button type="button" [class.selected]="mode() === 'login'" (click)="chooseMode('login')">Connexion</button>
+          <button type="button" [class.selected]="mode() === 'structure'" (click)="chooseMode('structure')">Structure</button>
+          <button type="button" [class.selected]="mode() === 'doctor'" (click)="chooseMode('doctor')">Médecin</button>
+        </nav>
+
+        @if (mode() !== 'login') {
+          <p class="form-hint">
+            @if (mode() === 'structure') {
+              Créez un compte pour votre structure. Son accès sera activé après vérification par l’équipe NEYA.
+            } @else {
+              Pour rejoindre une structure, demandez-lui d’abord un code d’invitation.
+            }
+          </p>
+        }
+      }
+
+      @if (showStructureFields()) {
         <label>
           Nom de la structure
-          <input type="text" [value]="displayName()" (input)="displayName.set($any($event.target).value)" autocomplete="organization" required />
+          <input type="text" [value]="displayName()" (input)="displayName.set($any($event.target).value)" autocomplete="organization" maxlength="160" required />
         </label>
         <label>
           Ville
-          <input type="text" [value]="city()" (input)="city.set($any($event.target).value)" autocomplete="address-level2" required />
+          <input type="text" [value]="city()" (input)="city.set($any($event.target).value)" autocomplete="address-level2" maxlength="100" required />
         </label>
         <label>
           Téléphone professionnel
-          <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" required />
+          <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" maxlength="32" required />
         </label>
         <label>
           Adresse (facultatif)
-          <input type="text" [value]="address()" (input)="address.set($any($event.target).value)" autocomplete="street-address" />
+          <input type="text" [value]="address()" (input)="address.set($any($event.target).value)" autocomplete="street-address" maxlength="240" />
         </label>
       }
 
-      @if (mode() === 'doctor' || (mode() === 'login' && pendingRegistration() === 'doctor')) {
+      @if (showDoctorFields()) {
         <label>
           Nom complet
-          <input type="text" [value]="displayName()" (input)="displayName.set($any($event.target).value)" autocomplete="name" required />
+          <input type="text" [value]="displayName()" (input)="displayName.set($any($event.target).value)" autocomplete="name" maxlength="120" required />
         </label>
         <label>
-          Téléphone professionnel
-          <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" />
+          Téléphone professionnel (facultatif)
+          <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" maxlength="32" />
+        </label>
+        <label>
+          Numéro d’ordre
+          <input type="text" [value]="orderNumber()" (input)="orderNumber.set($any($event.target).value)" autocomplete="off" maxlength="40" required />
+          <small class="field-hint">Votre numéro d’inscription à l’Ordre des médecins, des sages-femmes ou des psychologues. L’équipe NEYA le vérifie avant que votre profil soit visible.</small>
         </label>
         <label>
           Spécialité
@@ -65,30 +90,44 @@
           <label class="language-option"><input type="checkbox" [checked]="languages().includes('dioula')" (change)="toggleLanguage('dioula', $any($event.target).checked)" /> Dioula</label>
         </fieldset>
         <label>
-          Présentation professionnelle
+          Présentation professionnelle (facultatif)
           <textarea rows="3" maxlength="1000" [value]="bio()" (input)="bio.set($any($event.target).value)"></textarea>
         </label>
         <label>
           Code d’invitation de la structure
-          <input type="text" [value]="inviteCode()" (input)="inviteCode.set($any($event.target).value)" autocomplete="off" required />
+          <input type="text" [value]="inviteCode()" (input)="inviteCode.set($any($event.target).value)" autocomplete="off" spellcheck="false" maxlength="128" required />
+          <small class="field-hint">Votre structure (clinique, centre de santé…) vous donne ce code : elle le crée dans son espace NEYA avec le bouton « Créer un code d’invitation ». C’est une longue suite de lettres et de chiffres à copier-coller. Il marche une seule fois, pendant 7 jours.</small>
         </label>
       }
 
-      <label>
-        Adresse e-mail
-        <input type="email" [value]="email()" (input)="email.set($any($event.target).value)" autocomplete="email" required />
-      </label>
-      <label>
-        Mot de passe
-        <input type="password" [value]="password()" (input)="password.set($any($event.target).value)" autocomplete="current-password" minlength="8" required />
-      </label>
+      @if (!completing()) {
+        <label>
+          Adresse e-mail
+          <input type="email" [value]="email()" (input)="email.set($any($event.target).value)" [attr.autocomplete]="mode() === 'login' ? 'username' : 'off'" required />
+        </label>
+        <label>
+          Mot de passe
+          <input
+            type="password"
+            [value]="password()"
+            (input)="password.set($any($event.target).value)"
+            [attr.autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
+            minlength="8"
+            required
+          />
+          @if (mode() !== 'login') { <small class="field-hint">8 caractères minimum.</small> }
+        </label>
+      }
 
       <button class="submit-button" type="button" [disabled]="loading() || !backend.configured" (click)="submit()">
-        {{ loading() ? 'Patientez…' : mode() === 'login' ? 'Se connecter' : 'Créer mon compte' }}
+        {{ loading() ? 'Patientez…' : completing() ? 'Terminer mon inscription' : mode() === 'login' ? 'Se connecter' : 'Créer mon compte' }}
       </button>
 
-      @if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
-      @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+      @if (completing()) {
+        <button class="link-button" type="button" [disabled]="loading()" (click)="useAnotherAccount()">
+          Utiliser un autre compte
+        </button>
+      }
 
       <p class="privacy-note">Les visiteurs utilisent l’application sans créer de compte. Les données de santé ne doivent pas être utilisées en production avant validation des règles de confidentialité et de sécurité.</p>
     </section>

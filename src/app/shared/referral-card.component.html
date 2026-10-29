@@ -1,0 +1,86 @@
+<section class="referral-card">
+  @if (sentLabel()) {
+    <p class="referral-sent" role="status">
+      <ion-icon name="checkmark-circle" aria-hidden="true" />
+      <span>{{ sentLabel() }} Elle vous appellera au numéro indiqué.</span>
+    </p>
+  } @else if (!open()) {
+    <h3><ion-icon name="document-text-outline" aria-hidden="true" /> Préparer votre rendez-vous</h3>
+    <p class="muted">
+      Vous pouvez envoyer le résumé de votre évaluation à une structure de santé. Elle vous appellera pour en parler.
+    </p>
+    <ion-button expand="block" fill="outline" (click)="start()">
+      <ion-icon slot="start" name="send-outline" />
+      Envoyer mon résumé à une structure
+    </ion-button>
+  } @else {
+    <h3><ion-icon name="document-text-outline" aria-hidden="true" /> Envoyer mon résumé</h3>
+
+    <div class="summary-preview">
+      <strong>Ce qui sera envoyé</strong>
+      <ul>
+        <li>Résultat : {{ result().title }} (niveau {{ result().level }})</li>
+        @if (summary().age) { <li>Âge : {{ summary().age }}</li> }
+        <li>Changements signalés : {{ summary().symptoms.length ? summary().symptoms.join(', ') : 'aucun' }}</li>
+        <li>Langue souhaitée : {{ summary().language }}</li>
+        @if (summary().city) { <li>Ville : {{ summary().city }}</li> }
+        <li>Vos nom et numéro de téléphone (ci-dessous)</li>
+      </ul>
+      @if (aiDrafting()) {
+        <p class="ai-note pending">Rédaction d’une note pour le soignant…</p>
+      } @else if (aiSummary() && !aiSkipped()) {
+        <div class="ai-note">
+          <strong>Note pour le soignant</strong>
+          <p>{{ aiSummary() }}</p>
+          <small>Rédigée par une IA à partir de vos réponses, sans votre nom. Elle sera envoyée avec le résumé.</small>
+          <button type="button" class="skip-note" (click)="aiSkipped.set(true)">Ne pas joindre cette note</button>
+        </div>
+      } @else if (aiSkipped()) {
+        <p class="ai-note pending">
+          La note de l’IA ne sera pas jointe.
+          <button type="button" class="skip-note" (click)="aiSkipped.set(false)">La joindre quand même</button>
+        </p>
+      }
+    </div>
+
+    @if (structures().length) {
+      <label>
+        Structure qui recevra le résumé
+        <select [value]="structureId()" (change)="structureId.set($any($event.target).value)">
+          @for (structure of structures(); track structure.id) {
+            <option [value]="structure.id">{{ structure.name }} · {{ structure.city }}</option>
+          }
+        </select>
+      </label>
+    }
+    <div class="field-row">
+      <label>
+        Votre nom
+        <input type="text" [value]="fullName()" (input)="fullName.set($any($event.target).value)" autocomplete="name" maxlength="120" />
+      </label>
+      <label>
+        Votre téléphone
+        <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" maxlength="32" />
+      </label>
+    </div>
+
+    <label class="consent">
+      <input type="checkbox" [checked]="consent()" (change)="consent.set($any($event.target).checked)" />
+      <span>
+        J’accepte que ce résumé soit envoyé à la structure choisie. Seule cette structure pourra le lire.
+        Ce n’est pas un diagnostic.
+      </span>
+    </label>
+
+    @if (error()) { <p class="referral-error" role="alert">{{ error() }}</p> }
+
+    <ion-button expand="block" [disabled]="sending() || !consent()" (click)="send()">
+      <ion-icon slot="start" name="send-outline" />
+      {{ sending() ? 'Envoi…' : 'Envoyer le résumé' }}
+    </ion-button>
+    <ion-button expand="block" fill="clear" color="medium" [disabled]="sending()" (click)="open.set(false)">
+      Annuler
+    </ion-button>
+    <p class="privacy"><ion-icon name="lock-closed-outline" aria-hidden="true" /> Rien n’est envoyé sans votre accord.</p>
+  }
+</section>

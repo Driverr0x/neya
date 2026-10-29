@@ -1,0 +1,177 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  min-height: 112px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border: 2px solid var(--neya-beige-dark);
+  border-radius: 16px;
+  background: var(--neya-surface);
+  color: var(--neya-text);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+  .tile-icon {
+    font-size: 2.4rem;
+    color: var(--neya-muted);
+  }
+
+  .tile-image {
+    width: min(100%, 120px);
+    aspect-ratio: 1;
+    border-radius: 12px;
+    object-fit: contain;
+  }
+
+  /* Le mot reste discret tant que la tuile n'est pas active. */
+  .tile-word {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    opacity: 0.45;
+    transition: opacity 0.25s ease;
+  }
+
+  &.is-none .tile-icon {
+    color: #c0392b;
+  }
+
+  &.is-active {
+    border-color: var(--neya-pink);
+    background: var(--neya-pink-soft);
+    box-shadow: 0 0 0 4px rgba(214, 51, 108, 0.18), 0 10px 26px rgba(214, 51, 108, 0.28);
+    transform: scale(1.04);
+    animation: tile-glow 1.2s ease-in-out infinite alternate;
+
+    .tile-icon {
+      color: var(--neya-pink);
+    }
+
+    .tile-word {
+      font-size: 1.1rem;
+      opacity: 1;
+    }
+  }
+
+  &.is-selected {
+    border-color: var(--neya-pink);
+  }
+
+  .tile-check {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: grid;
+    width: 26px;
+    height: 26px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--neya-pink);
+    color: #fff;
+    font-size: 1rem;
+  }
+}
+
+.confirm {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+
+  .is-confirming {
+    width: min(100%, 220px);
+    min-height: 160px;
+    animation: none;
+
+    .tile-icon {
+      font-size: 3.4rem;
+    }
+
+    .tile-image {
+      width: min(100%, 180px);
+    }
+  }
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 24px;
+
+  button {
+    display: grid;
+    width: 76px;
+    height: 76px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 2.4rem;
+    box-shadow: var(--neya-shadow);
+    cursor: pointer;
+  }
+
+  .confirm-yes {
+    background: #2e9d5b;
+  }
+
+  .confirm-no {
+    background: var(--neya-muted);
+  }
+}
+
+.sound-unlock {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--neya-pink);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+
+  ion-icon {
+    font-size: 1.4rem;
+  }
+}
+
+@keyframes tile-glow {
+  from {
+    box-shadow: 0 0 0 4px rgba(214, 51, 108, 0.18), 0 10px 26px rgba(214, 51, 108, 0.2);
+  }
+
+  to {
+    box-shadow: 0 0 0 8px rgba(214, 51, 108, 0.1), 0 12px 30px rgba(214, 51, 108, 0.36);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .tile .tile-word {
+    transition: none;
+  }
+
+  .tile.is-active {
+    animation: none;
+    transform: none;
+  }
+}

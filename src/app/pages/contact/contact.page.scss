@@ -79,3 +79,28 @@
 .muted {
   color: var(--neya-muted);
 }
+.whatsapp-button {
+  --background: #1f8f4e;
+  --background-activated: #187440;
+  --background-hover: #187440;
+  --color: #fff;
+}
+
+.recovery-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--neya-text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  line-height: 1.45;
+
+  ion-icon {
+    flex: none;
+    font-size: 26px;
+  }
+
+  strong {
+    display: block;
+  }
+}

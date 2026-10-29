@@ -226,3 +226,41 @@
   color: var(--neya-pink);
   font-size: 2rem;
 }
+/* Réponse du professionnel : à gauche, sur fond blanc, avec son nom. */
+.message-bubble.from-pro {
+  align-self: flex-start;
+  border-radius: 17px 17px 17px 4px;
+  background: var(--neya-surface);
+
+  .sender {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--neya-pink);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  small {
+    text-align: left;
+  }
+}
+
+.recovery-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 4px 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--neya-pink-soft);
+  color: var(--neya-text);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-decoration: none;
+
+  ion-icon {
+    flex: none;
+    font-size: 20px;
+    color: var(--neya-pink);
+  }
+}

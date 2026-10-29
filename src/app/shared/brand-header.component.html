@@ -1,4 +1,26 @@
 <div class="brand-header">
   <img [src]="logoSrc" [alt]="'Logo ' + appName" />
   <span>{{ appName }}</span>
+  <button
+    type="button"
+    class="connection-chip"
+    [class.is-offline]="!store.online()"
+    [attr.aria-pressed]="!store.online()"
+    [attr.aria-label]="store.online() ? 'En ligne. Toucher pour passer en mode hors ligne' : 'Hors ligne. Toucher pour repasser en ligne'"
+    title="Toucher pour passer en ligne ou hors ligne"
+    (click)="store.toggleOffline()"
+  >
+    <ion-icon [name]="store.online() ? 'wifi-outline' : 'cloud-offline-outline'" aria-hidden="true" />
+    {{ store.online() ? 'En ligne' : 'Hors ligne' }}
+  </button>
+  <button
+    type="button"
+    class="sound-toggle"
+    [class.is-off]="!audio.enabled()"
+    [attr.aria-pressed]="audio.enabled()"
+    [attr.aria-label]="audio.enabled() ? 'Couper le son' : 'Activer le son'"
+    (click)="audio.setEnabled(!audio.enabled())"
+  >
+    <ion-icon [name]="audio.enabled() ? 'volume-high-outline' : 'volume-mute-outline'" aria-hidden="true" />
+  </button>
 </div>

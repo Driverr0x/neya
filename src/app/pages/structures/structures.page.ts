@@ -8,11 +8,15 @@ import {
 import { addIcons } from 'ionicons';
 import { 
   callOutline, timeOutline, locationOutline, 
-  calendarOutline, navigateOutline, megaphoneOutline 
+  calendarOutline, navigateOutline, megaphoneOutline,
+  checkmarkCircle, closeCircle,
 } from 'ionicons/icons';
 import { STRUCTURES, screeningsThisMonth } from '../core/data';
-import { PlatformScreening, PlatformStructure, BackendService } from '../core/backend.service';
+import {
+  AlreadyRegisteredError, BackendService, PlatformBooking, PlatformScreening, PlatformStructure,
+} from '../core/backend.service';
 import { Structure } from '../core/models';
+import { calendarParts, formatRange } from '../core/dates';
 import { StoreService } from '../core/store.service';
 import { BrandHeaderComponent } from '../../shared/brand-header.component';
 
@@ -37,6 +41,11 @@ export class StructuresPage {
   open = signal('');
   slot = signal('');
   fullName = signal('');
+  /** Dépistages où la visiteuse est déjà inscrite (identifiant → statut). */
+  registrations = signal<Record<string, PlatformBooking['status']>>({});
+  /** Message affiché dans la carte concernée, pas en haut de la page. */
+  eventMessages = signal<Record<string, string>>({});
+  registeringId = signal('');
   phone = signal('');
   appointmentSlot = signal('');
   error = signal('');
@@ -51,9 +60,18 @@ export class StructuresPage {
   constructor() {
     addIcons({ 
       callOutline, timeOutline, locationOutline, 
-      calendarOutline, navigateOutline, megaphoneOutline 
+      calendarOutline, navigateOutline, megaphoneOutline,
+      checkmarkCircle, closeCircle,
     });
     void this.loadPlatformData();
+  }
+
+  /** Au retour sur la page : la structure a peut-être confirmé ou annulé une inscription entre-temps. */
+  ionViewWillEnter(): void {
+    if (!this.backend.configured || !this.store.online()) return;
+    void this.backend.myScreeningRegistrations()
+      .then((registrations) => this.registrations.set(registrations))
+      .catch(() => undefined);
   }
 
   private demoScreenings(): PlatformScreening[] {
@@ -77,10 +95,13 @@ export class StructuresPage {
     if (!this.backend.configured) return;
     try {
       await this.backend.ensureVisitorSession();
-      const [structures, screenings] = await Promise.all([
+      const [structures, screenings, registrations] = await Promise.all([
         this.backend.browseStructures(),
         this.backend.browseScreenings(),
+        // Sans cette liste, la page proposerait encore de s'inscrire : ce n'est pas bloquant.
+        this.backend.myScreeningRegistrations().catch(() => ({})),
       ]);
+      this.registrations.set(registrations);
       this.structures.set(structures.map((structure) => ({
         id: structure.id,
         name: structure.name,
@@ -108,33 +129,46 @@ export class StructuresPage {
     return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${s.name} ${s.city}`); 
   }
 
-  isPast(d: Date) { 
-    const t = new Date(); 
-    t.setHours(0, 0, 0, 0); 
-    return d < t; 
+  calendar(value: string) {
+    return calendarParts(value);
   }
 
-  dateLabel(value: string) { 
-    return new Date(value).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }); 
-  }
-
-  eventTime(value: string): string {
-    return new Date(value).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  eventRange(event: PlatformScreening): string {
+    return formatRange(event.starts_at, event.ends_at);
   }
 
   eventEnded(value: string): boolean {
-    return this.isPast(new Date(value));
+    return new Date(value) < new Date();
   }
 
   async book(s: Structure, slot: string) {
     if (this.backend.configured) {
-      if (!this.store.online()) {
-        this.error.set('La demande de rendez-vous nécessite une connexion internet.');
-        return;
-      }
       const requestedSlot = this.appointmentSlot().trim();
       if (this.fullName().trim().length < 2 || this.phone().trim().length < 5 || !requestedSlot) {
         this.error.set('Indiquez votre nom, votre téléphone et le créneau souhaité.');
+        return;
+      }
+      if (!this.store.online()) {
+        // Sans réseau : la demande attend sur le téléphone et partira au retour de la connexion.
+        this.store.submit({
+          kind: 'appointment',
+          proName: s.name,
+          structureId: s.id,
+          slot: requestedSlot,
+          mode: 'cabinet',
+          booking: {
+            structureId: s.id,
+            kind: 'appointment',
+            fullName: this.fullName().trim(),
+            phone: this.phone().trim(),
+            slotLabel: requestedSlot,
+          },
+        });
+        this.error.set('');
+        this.open.set('');
+        this.router.navigate(['/tabs/confirmation/rdv'], {
+          queryParams: { pro: s.name, slot: requestedSlot, mode: 'cabinet', status: 'pending' },
+        });
         return;
       }
       try {
@@ -179,14 +213,34 @@ export class StructuresPage {
     }
 
     if (this.backend.configured) {
+      this.setEventMessage(event.id, '');
+      if (this.fullName().trim().length < 2) {
+        this.setEventMessage(event.id, 'Indiquez votre nom pour vous inscrire.');
+        return;
+      }
+      if (this.phone().trim().length < 5) {
+        this.setEventMessage(event.id, 'Indiquez votre numéro de téléphone : la structure vous appellera pour confirmer.');
+        return;
+      }
       if (!this.store.online()) {
-        this.error.set('L’inscription au dépistage nécessite une connexion internet.');
+        // Sans réseau : l'inscription attend sur le téléphone et partira au retour de la connexion.
+        this.store.submit({
+          kind: 'appointment',
+          proName: structure.name,
+          structureId: structure.id,
+          slot: `Dépistage · ${this.eventRange(event)}`,
+          mode: 'cabinet',
+          booking: {
+            structureId: event.structure_id,
+            kind: 'screening',
+            fullName: this.fullName().trim(),
+            phone: this.phone().trim(),
+            screeningEventId: event.id,
+          },
+        });
         return;
       }
-      if (this.fullName().trim().length < 2 || this.phone().trim().length < 5) {
-        this.error.set('Indiquez votre nom et votre téléphone pour vous inscrire.');
-        return;
-      }
+      this.registeringId.set(event.id);
       try {
         await this.backend.submitBooking({
           structureId: event.structure_id,
@@ -195,23 +249,57 @@ export class StructuresPage {
           phone: this.phone(),
           screeningEventId: event.id,
         });
-        this.error.set('');
+        this.markRegistered(event.id, 'requested');
         this.router.navigate(['/tabs/confirmation/rdv'], {
           queryParams: {
             pro: structure.name,
-            slot: `${this.dateLabel(event.starts_at)} · ${event.location || structure.city}`,
+            slot: `${this.eventRange(event)} · ${event.location || structure.city}`,
             mode: 'cabinet',
             status: 'sent',
           },
         });
         return;
       } catch (error) {
-        this.error.set(error instanceof Error ? error.message : 'Impossible de vous inscrire à ce dépistage.');
+        if (error instanceof AlreadyRegisteredError) {
+          // Inscription faite plus tôt : on affiche simplement la carte « Vous êtes inscrite ».
+          this.markRegistered(event.id, this.registrations()[event.id] ?? 'requested');
+        } else {
+          this.setEventMessage(event.id, error instanceof Error ? error.message : 'Impossible de vous inscrire à ce dépistage. Réessayez.');
+        }
         return;
+      } finally {
+        this.registeringId.set('');
       }
     }
 
-    await this.book(structure, `${this.dateLabel(event.starts_at)} ${event.location || structure.city}`);
+    await this.book(structure, `${this.eventRange(event)} · ${event.location || structure.city}`);
+  }
+
+  /** Inscription faite hors connexion, pas encore arrivée sur le serveur. */
+  isQueued(eventId: string): boolean {
+    return this.store.pendingBookings().some((item) => item.booking?.screeningEventId === eventId);
+  }
+
+  registrationNote(status: PlatformBooking['status']): string {
+    switch (status) {
+      case 'confirmed':
+        return 'Votre place est confirmée. Présentez-vous à l’heure indiquée.';
+      case 'cancelled':
+        return 'Votre inscription a été annulée par la structure. Appelez-la pour en savoir plus.';
+      case 'completed':
+        return 'Vous avez participé à ce dépistage.';
+      default:
+        return 'La structure va vous appeler pour confirmer votre place.';
+    }
+  }
+
+  private markRegistered(eventId: string, status: PlatformBooking['status']): void {
+    this.registrations.update((current) => ({ ...current, [eventId]: status }));
+    this.setEventMessage(eventId, '');
+  }
+
+  private setEventMessage(eventId: string, message: string): void {
+    this.eventMessages.update((current) => ({ ...current, [eventId]: message }));
   }
 
   eventMapUrl(event: PlatformScreening): string {

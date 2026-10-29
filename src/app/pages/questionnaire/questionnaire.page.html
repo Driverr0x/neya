@@ -61,11 +61,21 @@
       
       <small class="muted">Orientation établie par les règles NEYA.</small>
     </div>
-    <ion-button expand="block" fill="outline" (click)="readResult()">
-      <ion-icon slot="start" name="volume-high-outline" />
-      Écouter mon résultat
-    </ion-button>
-    @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+    @if (audioGuide.enabled()) {
+      <ion-button expand="block" fill="outline" (click)="readResult()">
+        <ion-icon slot="start" name="volume-high-outline" />
+        Écouter mon résultat
+      </ion-button>
+      @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+    }
+
+    @if (backend.configured) {
+      <app-ai-questions [result]="r" />
+    }
+
+    @if (r.level >= 2 && backend.configured) {
+      <app-referral-card [result]="r" [answers]="store.answers()" />
+    }
 
     <!-- Actions d'orientation -->
     <div class="action-buttons">
@@ -108,16 +118,45 @@
           <p class="muted">{{ cur.hint }}</p> 
         }
 
-        <ion-button expand="block" fill="outline" class="listen-button" (click)="readQuestion()">
-          <ion-icon slot="start" name="volume-high-outline" />
-          Écouter la question et les choix
-        </ion-button>
-        @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
-        
-        @for (o of cur.options; track o.value) {
-          <ion-button expand="block" class="big-btn" [attr.aria-label]="o.label" [fill]="isSel(cur, o.value) ? 'solid' : 'outline'" (click)="pick(cur, o.value)">
-            <ion-icon slot="start" [name]="o.icon" />{{ o.label }}
-          </ion-button>
+        @if (symptomTiles().length) {
+          <app-talking-tiles
+            [tiles]="symptomTiles()"
+            [running]="tilesRunning()"
+            [selected]="answers().symptoms ?? []"
+            (chosen)="chooseSymptom(cur, $event)"
+          />
+        } @else {
+          @if (audioGuide.enabled()) {
+            <ion-button expand="block" fill="outline" class="listen-button" (click)="readQuestion()">
+              <ion-icon slot="start" name="volume-high-outline" />
+              Écouter la question et les choix
+            </ion-button>
+            @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+          }
+
+          @if (pendingChoice(); as pending) {
+            <div class="choice-confirm" role="group" [attr.aria-label]="'Confirmer : ' + pending.option.label">
+              <p class="choice-confirm-label">
+                <ion-icon [name]="pending.option.icon" aria-hidden="true" />
+                {{ pending.option.label }}
+              </p>
+              <p class="muted">C’est bien votre réponse ?</p>
+              <div class="choice-confirm-actions">
+                <button type="button" class="confirm-yes" aria-label="Oui, je confirme" (click)="confirmChoice()">
+                  <ion-icon name="checkmark" aria-hidden="true" />
+                </button>
+                <button type="button" class="confirm-no" aria-label="Non, revenir aux choix" (click)="cancelChoice()">
+                  <ion-icon name="arrow-undo" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          } @else {
+            @for (o of cur.options; track o.value) {
+              <ion-button expand="block" class="big-btn" [attr.aria-label]="o.label" [fill]="isSel(cur, o.value) ? 'solid' : 'outline'" (click)="propose(cur, o)">
+                <ion-icon slot="start" [name]="o.icon" />{{ o.label }}
+              </ion-button>
+            }
+          }
         }
         
         @if (cur.multi) { 
@@ -128,7 +167,7 @@
       </div>
 
       @if (step() > 0) { 
-        <ion-button fill="clear" (click)="step.set(step() - 1)">
+        <ion-button fill="clear" (click)="previous()">
           ← Retour
         </ion-button> 
       }

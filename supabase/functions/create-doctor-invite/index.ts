@@ -1,4 +1,4 @@
-import { handleOptions, jsonResponse, serviceClient, sha256, verifiedUser } from '../_shared/http.ts';
+import { handleOptions, jsonResponse, serviceClient, sha256, verifiedUser, errorMessage } from '../_shared/http.ts';
 
 Deno.serve(async (request: Request) => {
   const options = handleOptions(request);
@@ -44,7 +44,7 @@ Deno.serve(async (request: Request) => {
     return jsonResponse({ inviteCode, expiresInDays: 7 }, 201);
   } catch (error) {
     console.error('Doctor invitation creation failed:', error);
-    const message = error instanceof Error ? error.message : 'Could not create invitation';
+    const message = errorMessage(error, 'Could not create invitation');
     return jsonResponse({ error: message }, 400);
   }
 });

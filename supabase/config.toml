@@ -9,3 +9,6 @@ verify_jwt = true
 
 [functions.explain-result]
 verify_jwt = true
+
+[functions.visitor-recovery]
+verify_jwt = true

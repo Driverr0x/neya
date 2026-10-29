@@ -70,3 +70,130 @@ ion-segment-button {
   --color-checked: var(--neya-pink);
   --indicator-color: var(--neya-surface);
 }
+
+/*
+ * Champs de formulaire natifs
+ * -----------------------------------------------------
+ * Un seul style pour toute l'application : une étiquette au-dessus, un champ arrondi,
+ * un contour rose quand on écrit dedans. Les pages n'ont plus à le redéfinir.
+ */
+
+label:has(> input:not([type="checkbox"], [type="radio"])),
+label:has(> select),
+label:has(> textarea) {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  margin: 12px 0;
+  color: var(--neya-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]),
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--neya-beige-dark);
+  border-radius: 12px;
+  background: var(--neya-background);
+  color: var(--neya-text);
+  font: inherit;
+  /* 16 px minimum : sinon iOS zoome sur le champ. */
+  font-size: max(1rem, 16px);
+  font-weight: 400;
+  appearance: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: var(--neya-muted);
+    opacity: 0.7;
+  }
+
+  &:focus {
+    border-color: var(--neya-pink);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(214, 51, 108, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+textarea {
+  min-height: 84px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+select {
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23d6336c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  position: relative;
+
+  &::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
+  /* Icône calée à droite du champ, comme la flèche des listes. */
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 10px;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0.75;
+    /* Icône teintée en rose NEYA. */
+    filter: invert(29%) sepia(76%) saturate(2335%) hue-rotate(320deg) brightness(88%) contrast(91%);
+  }
+}
+
+input[type="file"] {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px dashed var(--neya-beige-dark);
+  border-radius: 12px;
+  background: var(--neya-background);
+  color: var(--neya-muted);
+  font: inherit;
+  font-size: 0.85rem;
+
+  &::file-selector-button {
+    margin-right: 10px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--neya-pink-soft);
+    color: var(--neya-pink);
+    font: inherit;
+    font-weight: 700;
+  }
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--neya-pink);
+}
+
+/* Deux champs côte à côte quand la place le permet (date et heures, nom et téléphone…). */
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0 12px;
+}

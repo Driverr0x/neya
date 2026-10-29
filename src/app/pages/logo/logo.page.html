@@ -13,21 +13,24 @@
 
     <h1>NEYA</h1>
     <p>Informer. Comprendre. Orienter. Agir.</p>
-    <label class="language-picker">
-      Langue de l’application
-      <ion-select
-        aria-label="Langue de l’application"
-        [value]="language"
-        (ionChange)="setLanguage($event.detail.value)"
-      >
-        @for (option of languages; track option.code) {
-          <ion-select-option [value]="option.code">{{ option.label }}</ion-select-option>
-        }
-      </ion-select>
-    </label>
-    @if (audioMessage()) {
-      <p class="audio-message" role="status">{{ audioMessage() }}</p>
-    }
+    <button
+      type="button"
+      class="sound-choice"
+      [class.is-off]="!audio.enabled()"
+      [attr.aria-pressed]="audio.enabled()"
+      (click)="audio.setEnabled(!audio.enabled())"
+    >
+      <ion-icon [name]="audio.enabled() ? 'volume-high-outline' : 'volume-mute-outline'" aria-hidden="true" />
+      {{ audio.enabled() ? 'Son activé' : 'Son coupé' }}
+    </button>
+    <section class="language-picker" aria-label="Langue de l’application">
+      <app-talking-tiles
+        [tiles]="languageTiles"
+        [running]="tilesRunning()"
+        [selected]="[language]"
+        (chosen)="chooseLanguage($event)"
+      />
+    </section>
     <ion-button class="continue-button" routerLink="/tabs/info">Continuer</ion-button>
     <a class="professional-link" routerLink="/professional-access">
       Vous représentez une structure ou êtes médecin ? Inscrivez-vous

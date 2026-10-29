@@ -1,0 +1,150 @@
+.ai-questions {
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--neya-surface);
+  box-shadow: var(--neya-shadow);
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    font-weight: 800;
+
+    ion-icon {
+      color: var(--neya-pink);
+    }
+  }
+}
+
+.muted {
+  color: var(--neya-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.offline {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--neya-beige);
+  font-size: 0.88rem;
+  line-height: 1.45;
+
+  ion-icon {
+    flex: none;
+    margin-top: 2px;
+  }
+}
+
+.turn {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.question {
+  justify-self: end;
+  max-width: 85%;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--neya-pink);
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.answer {
+  justify-self: start;
+  max-width: 92%;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--neya-beige);
+  border-radius: 14px 14px 14px 4px;
+  background: var(--neya-background);
+  font-size: 0.92rem;
+  line-height: 1.5;
+
+  p {
+    margin: 0;
+  }
+}
+
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--neya-muted);
+}
+
+.listen {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--neya-pink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+
+  button {
+    padding: 6px 10px;
+    border: 1px solid var(--neya-pink);
+    border-radius: 999px;
+    background: var(--neya-pink-soft);
+    color: var(--neya-text);
+    font: inherit;
+    font-size: 0.82rem;
+    text-align: left;
+  }
+}
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+
+  textarea {
+    flex: 1;
+    min-width: 0;
+    resize: none;
+  }
+
+  .send {
+    flex: none;
+    margin: 0;
+  }
+}
+
+.error {
+  margin: 8px 0 0;
+  color: #b3261e;
+  font-size: 0.88rem;
+}
+
+.privacy {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 0;
+  color: var(--neya-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+
+  ion-icon {
+    flex: none;
+    margin-top: 2px;
+  }
+}

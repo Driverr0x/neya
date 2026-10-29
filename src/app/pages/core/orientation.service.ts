@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { PROFESSIONALS, hasConcerningSymptoms } from './data';
-import { Answers, Lang, OrientationResult, Professional, Specialty } from './models';
+import { hasConcerningSymptoms } from './data';
+import { Answers, Lang, OrientationResult } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class OrientationService {
@@ -22,26 +22,8 @@ export class OrientationService {
         : ['Cette orientation repose uniquement sur vos réponses au questionnaire.'],
       specialty: level >= 2 ? 'sage-femme' : null,
       language: (answers.language as Lang | undefined) ?? 'fr',
-      videoId: 'depistage',
+      videoId: 'sensibilisation',
       source: 'rules',
     };
-  }
-
-  rankPros(
-    specialty: Specialty | null,
-    language: Lang,
-    city?: string,
-  ): Professional[] {
-    const normalizedCity = city?.toLocaleLowerCase();
-    return PROFESSIONALS.map((professional, index) => ({
-      professional,
-      index,
-      score:
-        (professional.specialty === specialty ? 4 : 0) +
-        (professional.langs.includes(language) ? 2 : 0) +
-        (professional.city.toLocaleLowerCase() === normalizedCity ? 1 : 0),
-    }))
-      .sort((first, second) => second.score - first.score || first.index - second.index)
-      .map(({ professional }) => professional);
   }
 }

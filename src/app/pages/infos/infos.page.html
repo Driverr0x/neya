@@ -6,19 +6,33 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  @if (loadError()) { <div class="card info-card" role="alert">{{ loadError() }}</div> }
   @if (video(); as selectedVideo) {
     <div class="card info-card">
-      <video controls playsinline preload="metadata" [src]="selectedVideo.src">
-        Votre navigateur ne prend pas en charge la lecture vidéo.
-      </video>
-      <p class="muted">{{ selectedVideo.author }} · {{ selectedVideo.duration }} · {{ label[selectedVideo.lang] }}</p>
+      <div class="player">
+        @if (availability(selectedVideo) === 'unavailable') {
+          <div class="video-unavailable">
+            <ion-icon name="cloud-offline-outline" aria-hidden="true" />
+            <strong>Disponible en ligne uniquement</strong>
+            <span>Reconnectez-vous pour la regarder, ou téléchargez-la la prochaine fois.</span>
+          </div>
+        } @else {
+          <video controls playsinline [preload]="selectedVideo.poster ? 'none' : 'metadata'" [poster]="selectedVideo.poster ?? ''" [src]="srcFor(selectedVideo)">
+            Votre navigateur ne prend pas en charge la lecture vidéo.
+          </video>
+        }
+        @if (availability(selectedVideo) === 'builtin' || availability(selectedVideo) === 'saved') {
+          <span class="offline-badge"><ion-icon name="checkmark-circle" aria-hidden="true" /> Hors ligne</span>
+        }
+      </div>
+      <p class="muted">{{ meta(selectedVideo) }} · {{ label[selectedVideo.lang] }}</p>
       <p>{{ selectedVideo.description }}</p>
-      <ion-button expand="block" fill="outline" (click)="readVideo(selectedVideo)">
-        <ion-icon slot="start" name="volume-high-outline" />
-        Écouter la description
-      </ion-button>
-      @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+      @if (audioGuide.enabled()) {
+        <ion-button expand="block" fill="outline" (click)="readVideo(selectedVideo)">
+          <ion-icon slot="start" name="volume-high-outline" />
+          Écouter la description
+        </ion-button>
+        @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
+      }
       <ion-button expand="block" routerLink="/tabs/info">Retour aux vidéos</ion-button>
     </div>
   } @else if (videoId()) {
@@ -36,27 +50,51 @@
       <p class="muted">Faites défiler les vidéos vers le haut. Les textes peuvent être lus à voix haute.</p>
     </div>
 
-    <p class="language-note">Vidéos en {{ label[lang] }}</p>
+    @if (showingFallback()) {
+      <p class="language-note fallback">Pas encore de vidéo en {{ label[lang] }} : voici les vidéos en français.</p>
+    } @else {
+      <p class="language-note">Vidéos en {{ label[lang] }}</p>
+    }
+    @if (loadError()) { <p class="load-note" role="status">{{ loadError() }}</p> }
+    @if (savedSummary()) {
+      <p class="saved-summary"><ion-icon name="checkmark-circle" aria-hidden="true" /> {{ savedSummary() }}</p>
+    }
     @if (audioMessage()) { <p class="audio-message" role="status">{{ audioMessage() }}</p> }
-    @if (filteredVideos.length) {
-      <div class="video-feed" aria-label="Vidéos d’information dans la langue choisie">
-        @for (v of filteredVideos; track v.id) {
-          <article class="video-card" [class.is-playing]="playingVideoId() === v.id">
-            <video
-              controls
-              playsinline
-              preload="metadata"
-              [src]="v.src"
-              [attr.aria-label]="v.title"
-              (play)="onVideoPlay(v.id, $event)"
-              (pause)="onVideoStopped($event)"
-              (ended)="onVideoStopped($event)"
-            >
-              Votre navigateur ne prend pas en charge la lecture vidéo.
-            </video>
+    @if (feedVideos().length) {
+      <div class="video-feed" aria-label="Vidéos d’information">
+        @for (v of feedVideos(); track v.id) {
+          <article class="video-card" [class.is-playing]="playingVideoId() === v.id" [class.is-unavailable]="availability(v) === 'unavailable'">
+            <div class="video-frame">
+              @if (availability(v) === 'unavailable') {
+                <div class="video-unavailable">
+                  <ion-icon name="cloud-offline-outline" aria-hidden="true" />
+                  <strong>Disponible en ligne uniquement</strong>
+                  <span>Reconnectez-vous pour la regarder.</span>
+                </div>
+              } @else {
+                <video
+                  controls
+                  playsinline
+                  [preload]="v.poster ? 'none' : 'metadata'"
+                  [poster]="v.poster ?? ''"
+                  [src]="srcFor(v)"
+                  [attr.aria-label]="v.title"
+                  (play)="onVideoPlay(v.id, $event)"
+                  (pause)="onVideoStopped($event)"
+                  (ended)="onVideoStopped($event)"
+                >
+                  Votre navigateur ne prend pas en charge la lecture vidéo.
+                </video>
+              }
+              @if (availability(v) === 'builtin' || availability(v) === 'saved') {
+                <span class="offline-badge" [attr.title]="availability(v) === 'builtin' ? 'Intégrée à l’application' : 'Enregistrée sur ce téléphone'">
+                  <ion-icon name="checkmark-circle" aria-hidden="true" /> Hors ligne
+                </span>
+              }
+            </div>
             <div class="video-copy">
               <p class="video-meta">
-                {{ v.author }} · {{ v.duration }}
+                {{ meta(v) }}
                 @if (playingVideoId() === v.id) {
                   <span class="playing-indicator" aria-live="polite"> · Lecture en cours</span>
                 }
@@ -64,14 +102,35 @@
               <h2>{{ v.title }}</h2>
               <p>{{ v.description }}</p>
               <div class="video-actions">
-                <ion-button fill="outline" (click)="readVideo(v)">
-                  <ion-icon slot="start" name="volume-high-outline" />
-                  Écouter le texte
-                </ion-button>
+                @if (audioGuide.enabled()) {
+                  <ion-button fill="outline" (click)="readVideo(v)">
+                    <ion-icon slot="start" name="volume-high-outline" />
+                    Écouter le texte
+                  </ion-button>
+                }
+                @if (offline.supported && availability(v) !== 'builtin') {
+                  @if (offline.isDownloading(v.id)) {
+                    <ion-button fill="outline" (click)="offline.cancel(v.id)" [attr.aria-label]="progressLabel(v.id) + '. Toucher pour annuler'">
+                      <ion-icon slot="start" name="close-outline" />
+                      {{ progressLabel(v.id) }}
+                    </ion-button>
+                  } @else if (availability(v) === 'saved') {
+                    <ion-button fill="clear" color="medium" (click)="removeDownload(v)">
+                      <ion-icon slot="start" name="trash-outline" />
+                      Retirer du téléphone ({{ savedSize(v.id) }})
+                    </ion-button>
+                  } @else if (availability(v) === 'online') {
+                    <ion-button fill="outline" (click)="download(v)">
+                      <ion-icon slot="start" name="cloud-download-outline" />
+                      Télécharger pour hors ligne
+                    </ion-button>
+                  }
+                }
                 <ion-button fill="clear" [routerLink]="['/tabs/info', v.id]" aria-label="Ouvrir cette vidéo">
                   Détails
                 </ion-button>
               </div>
+              @if (videoErrors()[v.id]) { <p class="video-error" role="alert">{{ videoErrors()[v.id] }}</p> }
             </div>
           </article>
         }

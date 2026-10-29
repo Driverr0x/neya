@@ -1,0 +1,66 @@
+<section class="ai-questions">
+  <h3><ion-icon name="chatbubble-ellipses-outline" aria-hidden="true" /> {{ english() ? 'Ask your questions' : 'Posez vos questions' }}</h3>
+
+  @if (!store.online()) {
+    <p class="offline">
+      <ion-icon name="cloud-offline-outline" aria-hidden="true" />
+      Disponible avec internet. En attendant, un professionnel de santé peut répondre à toutes vos questions.
+    </p>
+  } @else {
+    <p class="muted">
+      Une assistante répond simplement à vos questions sur le sein et le dépistage. Elle ne pose pas de diagnostic.
+    </p>
+
+    @for (turn of turns(); track $index) {
+      <div class="turn">
+        <p class="question">{{ turn.question }}</p>
+        <div class="answer">
+          <p>{{ turn.answer }}</p>
+          @if (audioGuide.enabled() && !english()) {
+            <button type="button" class="listen" (click)="listen(turn.answer)">
+              <ion-icon name="volume-high-outline" aria-hidden="true" /> Écouter
+            </button>
+          }
+        </div>
+      </div>
+    }
+    @if (asking(); as pending) {
+      <div class="turn">
+        <p class="question">{{ pending }}</p>
+        <p class="answer thinking"><ion-spinner name="dots" /> Réponse en cours…</p>
+      </div>
+    }
+
+    @if (remaining() > 0) {
+      @if (examples().length && !asking()) {
+        <div class="examples" aria-label="Exemples de questions">
+          @for (example of examples(); track example) {
+            <button type="button" (click)="ask(example)">{{ example }}</button>
+          }
+        </div>
+      }
+      <div class="composer">
+        <textarea
+          rows="2"
+          maxlength="400"
+          [placeholder]="english() ? 'Type your question…' : 'Écrivez votre question…'"
+          [value]="draft()"
+          (input)="draft.set($any($event.target).value)"
+          (keydown.enter)="$event.preventDefault(); ask()"
+          aria-label="Votre question"
+        ></textarea>
+        <ion-button class="send" [disabled]="!draft().trim() || !!asking()" (click)="ask()" aria-label="Envoyer la question">
+          <ion-icon slot="icon-only" name="send-outline" />
+        </ion-button>
+      </div>
+    } @else {
+      <p class="muted">Pour aller plus loin, parlez-en à un professionnel de santé : il connaît votre situation.</p>
+    }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+
+    <p class="privacy">
+      <ion-icon name="lock-closed-outline" aria-hidden="true" />
+      Vos questions partent vers un service d’IA sans votre nom ni votre numéro. Elles ne sont pas enregistrées.
+    </p>
+  }
+</section>

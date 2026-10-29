@@ -67,32 +67,6 @@
   }
 }
 
-.access-card > label {
-  display: grid;
-  gap: 6px;
-  margin: 14px 0;
-  color: var(--neya-text);
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  input,
-  select,
-  textarea {
-    width: 100%;
-    min-height: 44px;
-    padding: 10px 12px;
-    border: 1px solid var(--neya-beige-dark);
-    border-radius: 10px;
-    background: var(--neya-background);
-    color: var(--neya-text);
-    font: inherit;
-  }
-
-  textarea {
-    resize: vertical;
-  }
-}
-
 fieldset {
   display: flex;
   flex-wrap: wrap;
@@ -134,8 +108,29 @@ fieldset {
   }
 }
 
+.field-hint {
+  color: var(--neya-muted);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.link-button {
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--neya-pink);
+  font: inherit;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .notice,
 .error {
+  margin: 14px 0 0;
   padding: 12px;
   border-radius: 10px;
   line-height: 1.45;

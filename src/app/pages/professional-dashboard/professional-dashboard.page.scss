@@ -16,12 +16,49 @@
 }
 
 .dashboard-top {
+  flex-wrap: wrap;
+  align-items: flex-start;
   margin-bottom: 18px;
+
+  > div {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
 
   h1 {
     margin: 4px 0;
     color: var(--neya-text);
-    font-size: 1.6rem;
+    font-size: 1.45rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .secondary-button {
+    flex: none;
+  }
+}
+
+.sub-heading {
+  margin: 22px 0 4px;
+  color: var(--neya-text);
+  font-size: 1rem;
+}
+
+.schedule-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--neya-pink-soft);
+  color: var(--neya-text);
+  font-weight: 600;
+
+  ion-icon {
+    flex: none;
+    color: var(--neya-pink);
+    font-size: 1.15rem;
   }
 }
 
@@ -59,6 +96,15 @@
 
 .list-row {
   padding: 12px 0;
+
+  > div {
+    min-width: 0;
+  }
+
+  strong {
+    overflow-wrap: anywhere;
+  }
+
   border-top: 1px solid var(--neya-beige);
 
   p {
@@ -97,6 +143,23 @@
   color: var(--neya-text);
   font-size: 0.75rem;
   font-weight: 700;
+  white-space: nowrap;
+
+  &[data-status="requested"] {
+    background: #fff4d6;
+    color: #7a5a00;
+  }
+
+  &[data-status="confirmed"],
+  &[data-status="completed"] {
+    background: #e3f4e8;
+    color: #22663a;
+  }
+
+  &[data-status="cancelled"] {
+    background: #f1eceb;
+    color: var(--neya-muted);
+  }
 }
 
 .invite-code {
@@ -104,34 +167,6 @@
   padding: 12px;
   border-radius: 10px;
   background: var(--neya-pink-soft);
-}
-
-.panel > label {
-  display: grid;
-  gap: 6px;
-  margin: 12px 0;
-  color: var(--neya-text);
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  input,
-  select,
-  textarea {
-    width: 100%;
-    min-height: 42px;
-    padding: 9px 11px;
-    border: 1px solid var(--neya-beige-dark);
-    border-radius: 9px;
-    background: var(--neya-background);
-    color: var(--neya-text);
-    font: inherit;
-  }
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
 }
 
 .primary-button,
@@ -195,24 +230,6 @@
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid var(--neya-beige);
-
-  label {
-    display: grid;
-    gap: 6px;
-    margin: 14px 0;
-    color: var(--neya-text);
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  textarea {
-    padding: 10px;
-    border: 1px solid var(--neya-beige-dark);
-    border-radius: 9px;
-    background: var(--neya-background);
-    color: var(--neya-text);
-    font: inherit;
-  }
 }
 
 .message-item {
@@ -263,5 +280,125 @@
 
   .video-row video {
     width: 100%;
+  }
+}
+
+.panel-hint {
+  margin: -6px 0 12px;
+  color: var(--neya-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.referral-row {
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid var(--neya-beige);
+  border-left: 6px solid var(--neya-beige-dark);
+  border-radius: 12px;
+  background: var(--neya-background);
+
+  &[data-level="2"] {
+    border-left-color: #e0a100;
+  }
+
+  &[data-level="3"] {
+    border-left-color: #c8323c;
+  }
+
+  label {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+}
+
+.referral-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  p {
+    margin: 4px 0 0;
+    color: var(--neya-muted);
+    font-size: 0.85rem;
+  }
+
+  a {
+    color: var(--neya-pink);
+    font-weight: 700;
+  }
+}
+
+.level-pill {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--neya-pink-soft);
+  color: var(--neya-pink);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.referral-facts {
+  margin: 10px 0 4px;
+  padding-left: 18px;
+  color: var(--neya-text);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.case-editor {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--neya-beige-dark);
+}
+
+.case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  .status-pill[data-case="suspected"] {
+    background: #fff4d6;
+    color: #7a5a00;
+  }
+
+  .status-pill[data-case="confirmed"] {
+    background: #fde2e4;
+    color: #8f2e2e;
+  }
+
+  .status-pill[data-case="ruled_out"],
+  .status-pill[data-case="contacted"] {
+    background: #e3f4e8;
+    color: #22663a;
+  }
+
+  .primary-button:disabled {
+    opacity: 0.5;
+  }
+}
+
+.referral-ai-note {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--neya-surface);
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  p {
+    margin: 0 0 4px;
+  }
+
+  small {
+    color: var(--neya-muted);
+    font-size: 0.78rem;
   }
 }

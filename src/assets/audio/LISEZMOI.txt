@@ -1,0 +1,17 @@
+ENREGISTREMENTS AUDIO NEYA (mooré et dioula)
+============================================
+
+Le français et l'anglais sont lus par la voix du téléphone : rien à enregistrer.
+
+Dans moore/ ET dans dioula/, 7 fichiers audio (14 au total), noms exacts — formats acceptés : .ogg, .mp4, .m4a ou .mp3 :
+
+langue                      « Mooré » / « Dioula », dit dans la langue
+symptome-lump               Une boule ou une grosseur
+symptome-orange-peel        Peau d'orange
+symptome-discharge          Écoulement anormal
+symptome-change             Un mamelon qui rentre ou change
+symptome-pain               Une douleur persistante
+symptome-none               Pas de symptômes
+
+Facultatif plus tard : rappel-niveau-1, rappel-niveau-2,
+rappel-niveau-3 (sinon le rappel est lu en français).
