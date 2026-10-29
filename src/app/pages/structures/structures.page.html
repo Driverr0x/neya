@@ -10,7 +10,7 @@
         <ion-label>Structures</ion-label>
       </ion-segment-button>
       <ion-segment-button value="month">
-        <ion-label>Dépistages du mois</ion-label>
+        <ion-label>Dépistages</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
@@ -99,36 +99,73 @@
     </div>
 
     @for (d of events(); track d.id) {
-      <div class="card event-card" [style.opacity]="eventEnded(d.ends_at) ? .55 : 1">
-        <small class="muted">
-          {{ dateLabel(d.starts_at) }} · {{ eventTime(d.starts_at) }}
-          @if (eventEnded(d.ends_at)) { · terminé }
-        </small>
-        <h3>{{ d.title }}</h3>
-        <p class="muted">
-          {{ d.structures?.name }} — {{ d.structures?.city }} ·
-          {{ d.free ? 'Gratuit' : 'Payant' }}
-        </p>
-        @if (d.description) { <p class="muted">{{ d.description }}</p> }
-        @if (backend.configured) {
-          <div class="registration-fields">
-            <label>Nom complet
-              <input type="text" [value]="fullName()" (input)="fullName.set($any($event.target).value)" autocomplete="name" />
-            </label>
-            <label>Téléphone
-              <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" />
-            </label>
+      <div class="card event-card" [class.ended]="eventEnded(d.ends_at)">
+        <div class="event-head">
+          @if (calendar(d.starts_at); as day) {
+            <div class="date-badge" aria-hidden="true">
+              <span class="weekday">{{ day.weekday }}</span>
+              <span class="day">{{ day.day }}</span>
+              <span class="month">{{ day.month }}</span>
+            </div>
+          }
+          <div class="event-summary">
+            <h3>{{ d.title }}</h3>
+            <p class="event-line"><ion-icon name="time-outline" aria-hidden="true" /> {{ eventRange(d) }}</p>
+            <p class="event-line">
+              <ion-icon name="location-outline" aria-hidden="true" />
+              {{ d.structures?.name }} · {{ d.location || d.structures?.city }}
+            </p>
+            <span class="price-pill" [class.ended]="eventEnded(d.ends_at)">
+              {{ eventEnded(d.ends_at) ? 'Terminé' : d.free ? 'Gratuit' : 'Payant' }}
+            </span>
+          </div>
+        </div>
+        @if (d.description) { <p class="muted event-description">{{ d.description }}</p> }
+
+        @if (isQueued(d.id)) {
+          <div class="registered-box" data-status="queued" role="status">
+            <ion-icon name="time-outline" aria-hidden="true" />
+            <div>
+              <strong>Inscription enregistrée</strong>
+              <p>Vous êtes hors ligne : elle partira toute seule dès le retour de la connexion.</p>
+            </div>
+          </div>
+        } @else if (registrations()[d.id]; as status) {
+          <div class="registered-box" [attr.data-status]="status" role="status">
+            <ion-icon [name]="status === 'cancelled' ? 'close-circle' : 'checkmark-circle'" aria-hidden="true" />
+            <div>
+              <strong>{{ status === 'cancelled' ? 'Inscription annulée' : 'Vous êtes inscrite' }}</strong>
+              <p>{{ registrationNote(status) }}</p>
+            </div>
+          </div>
+          <div class="button-group">
+            <ion-button fill="outline" [href]="eventMapUrl(d)" target="_blank" [disabled]="!store.online()">
+              <ion-icon slot="start" name="navigate-outline" />Voir le lieu
+            </ion-button>
+          </div>
+        } @else {
+          @if (backend.configured && !eventEnded(d.ends_at)) {
+            <div class="field-row registration-fields">
+              <label>Nom complet
+                <input type="text" [value]="fullName()" (input)="fullName.set($any($event.target).value)" autocomplete="name" />
+              </label>
+              <label>Téléphone
+                <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" />
+              </label>
+            </div>
+          }
+          @if (eventMessages()[d.id]) {
+            <p class="event-message" role="alert">{{ eventMessages()[d.id] }}</p>
+          }
+          <div class="button-group">
+            <ion-button [disabled]="eventEnded(d.ends_at) || registeringId() === d.id || (backend.configured && !store.online())" (click)="registerScreening(d)">
+              <ion-icon slot="start" name="calendar-outline" />{{ registeringId() === d.id ? 'Inscription…' : 'S’inscrire' }}
+            </ion-button>
+            <ion-button fill="outline" [href]="eventMapUrl(d)" target="_blank" [disabled]="!store.online()">
+              <ion-icon slot="start" name="navigate-outline" />Localisation
+            </ion-button>
           </div>
         }
-
-        <div class="button-group">
-          <ion-button [disabled]="eventEnded(d.ends_at) || (backend.configured && !store.online())" (click)="registerScreening(d)">
-            <ion-icon slot="start" name="calendar-outline" />S’inscrire
-          </ion-button>
-          <ion-button fill="outline" [href]="eventMapUrl(d)" target="_blank" [disabled]="!store.online()">
-            <ion-icon slot="start" name="navigate-outline" />Localisation
-          </ion-button>
-        </div>
       </div>
     } @empty {
       <p class="disclaimer">Aucun dépistage n’est programmé pour le reste du mois.</p>

@@ -1,5 +1,5 @@
-<ion-tabs>
-  <ion-tab-bar slot="bottom">
+<ion-tabs (ionTabsDidChange)="onTabChanged()">
+  <ion-tab-bar slot="bottom" (ionTabButtonClick)="onTabButton($event)">
     <ion-tab-button tab="info">
       <ion-icon name="play-circle-outline" />
       <ion-label>Infos</ion-label>

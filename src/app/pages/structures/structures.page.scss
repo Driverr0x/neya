@@ -31,12 +31,15 @@
 
 .button-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 
   ion-button {
-    flex: 1;
-    --border-radius: 8px;
+    flex: 1 1 130px;
+    min-width: 0;
+    margin: 0;
+    --border-radius: 10px;
   }
 }
 
@@ -89,4 +92,143 @@
 .muted {
   color: #666;
   font-size: 0.9rem;
+}
+.event-card.ended {
+  opacity: 0.6;
+}
+
+.event-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.date-badge {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  width: 58px;
+  padding: 6px 0 8px;
+  border-radius: 14px;
+  background: var(--neya-pink-soft);
+  color: var(--neya-pink);
+  line-height: 1.1;
+  text-transform: uppercase;
+
+  .weekday,
+  .month {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .day {
+    font-size: 1.55rem;
+    font-weight: 800;
+  }
+}
+
+.event-summary {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    margin-bottom: 6px;
+    overflow-wrap: anywhere;
+  }
+}
+
+.event-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 4px 0;
+  color: var(--neya-muted);
+  font-size: 0.88rem;
+  line-height: 1.35;
+
+  ion-icon {
+    flex: none;
+    margin-top: 2px;
+    color: var(--neya-pink);
+  }
+}
+
+.price-pill {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e3f4e8;
+  color: #22663a;
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  &.ended {
+    background: #f1eceb;
+    color: var(--neya-muted);
+  }
+}
+
+.event-description {
+  margin: 12px 0 0;
+  line-height: 1.45;
+}
+
+.registration-fields {
+  margin-top: 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--neya-beige);
+}
+
+.slot-container label,
+.registration-fields label {
+  margin: 10px 0;
+}
+
+.registered-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #e3f4e8;
+  color: #1f5c34;
+
+  ion-icon {
+    flex: none;
+    font-size: 1.5rem;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.98rem;
+  }
+
+  p {
+    margin: 3px 0 0;
+    font-size: 0.86rem;
+    line-height: 1.4;
+  }
+
+  &[data-status="cancelled"] {
+    background: #f1eceb;
+    color: var(--neya-muted);
+  }
+
+  &[data-status="queued"] {
+    background: #fff4d6;
+    color: #6b4f00;
+  }
+}
+
+.event-message {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff0ed;
+  color: #8f2e2e;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }

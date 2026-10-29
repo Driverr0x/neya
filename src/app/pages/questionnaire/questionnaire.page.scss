@@ -125,3 +125,57 @@
   color: #666;
   font-size: 0.9rem;
 }
+/* Confirmation d'une réponse unique : mêmes boutons ✔ / ↩ que les tuiles des symptômes. */
+.choice-confirm {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 8px 0 4px;
+  text-align: center;
+}
+
+.choice-confirm-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 22px;
+  border: 2px solid var(--neya-pink);
+  border-radius: 16px;
+  background: var(--neya-pink-soft);
+  color: var(--neya-text);
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  ion-icon {
+    color: var(--neya-pink);
+    font-size: 1.6rem;
+  }
+}
+
+.choice-confirm-actions {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+
+  button {
+    display: grid;
+    width: 76px;
+    height: 76px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 2.4rem;
+    box-shadow: var(--neya-shadow);
+    cursor: pointer;
+  }
+
+  .confirm-yes {
+    background: #2e9d5b;
+  }
+
+  .confirm-no {
+    background: var(--neya-muted);
+  }
+}

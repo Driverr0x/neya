@@ -18,4 +18,48 @@
     height: 36px;
     object-fit: contain;
   }
+
+  .connection-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    margin-left: auto;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: #e3f4e8;
+    color: #22663a;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0;
+
+    ion-icon {
+      font-size: 1rem;
+    }
+
+    &.is-offline {
+      background: var(--neya-beige);
+      color: var(--neya-text);
+    }
+  }
+
+  .sound-toggle {
+    display: grid;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: var(--neya-pink-soft);
+    color: var(--neya-pink);
+    font-size: 1.4rem;
+
+    &.is-off {
+      background: var(--neya-beige);
+      color: var(--neya-muted);
+    }
+  }
 }

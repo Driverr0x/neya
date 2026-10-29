@@ -35,6 +35,10 @@ const routes: Routes = [
         loadChildren: () =>
           import('../confirmation/confirmation.module').then((m) => m.ConfirmationPageModule),
       },
+      {
+        path: 'recuperation',
+        loadComponent: () => import('../recovery/recovery.page').then((m) => m.RecoveryPage),
+      },
       { path: '', redirectTo: 'info', pathMatch: 'full' },
       { path: 'accueil', redirectTo: 'info', pathMatch: 'full' },
     ],

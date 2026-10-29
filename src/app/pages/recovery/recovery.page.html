@@ -1,0 +1,92 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/contact" text="Retour" />
+    </ion-buttons>
+    <ion-title>Récupération</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (!backend.configured) {
+    <div class="recovery-card">
+      <p>Le code de récupération n’est pas disponible dans cette version de démonstration.</p>
+    </div>
+  } @else if (!store.online()) {
+    <div class="recovery-card">
+      <ion-icon name="phone-portrait-outline" class="card-icon" />
+      <p>Une connexion internet est nécessaire pour créer ou utiliser un code.</p>
+    </div>
+  } @else {
+    <section class="recovery-card">
+      <ion-icon name="key-outline" class="card-icon" />
+      <h2>Mon code de récupération</h2>
+      <p class="intro">
+        Vous n’avez pas de compte : vos messages, rendez-vous et inscriptions sont liés à ce téléphone.
+        Avec ce code, vous les retrouvez si vous changez de téléphone ou réinstallez l’application.
+      </p>
+
+      @if (code()) {
+        <p class="code" aria-label="Votre code de récupération">{{ code() }}</p>
+        <div class="code-actions">
+          <ion-button fill="outline" (click)="copyCode()">
+            <ion-icon slot="start" name="copy-outline" />
+            {{ copied() ? 'Copié ✔' : 'Copier' }}
+          </ion-button>
+        </div>
+        <p class="hint">Notez-le sur papier ou faites une capture d’écran. Ne le donnez à personne : il ouvre vos messages.</p>
+
+        @if (confirmReplace()) {
+          <div class="replace-confirm" role="alert">
+            <p>L’ancien code ne marchera plus. Créer un nouveau code ?</p>
+            <ion-button size="small" (click)="createCode()">Oui, nouveau code</ion-button>
+            <ion-button size="small" fill="clear" (click)="confirmReplace.set(false)">Annuler</ion-button>
+          </div>
+        } @else {
+          <ion-button fill="clear" size="small" class="replace-link" [disabled]="creating()" (click)="confirmReplace.set(true)">
+            Créer un nouveau code
+          </ion-button>
+        }
+      } @else {
+        <ion-button expand="block" [disabled]="creating()" (click)="createCode()">
+          {{ creating() ? 'Création…' : 'Créer mon code' }}
+        </ion-button>
+      }
+      @if (createError()) { <p class="error" role="alert">{{ createError() }}</p> }
+    </section>
+
+    <section class="recovery-card">
+      <ion-icon name="phone-portrait-outline" class="card-icon" />
+      <h2>J’ai déjà un code</h2>
+      @if (recovered(); as moved) {
+        <div class="success" role="status">
+          <p><strong>Vos données sont de retour ✔</strong></p>
+          <p>Retrouvé : {{ recoveredSummary(moved) }}.</p>
+          <p>Votre ancien code ne marche plus : <strong>notez le nouveau</strong>, affiché ci-dessus.</p>
+          <ion-button expand="block" routerLink="/tabs/contact">Voir les professionnels</ion-button>
+        </div>
+      } @else {
+        <p class="intro">Tapez le code noté sur votre ancien téléphone.</p>
+        <label class="code-field">
+          Code de récupération
+          <input
+            type="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            maxlength="32"
+            placeholder="NEYA-XXXX-XXXX-XXXX-XXXX"
+            [value]="typedCode()"
+            (input)="typedCode.set($any($event.target).value)"
+          />
+        </label>
+        <p class="hint">Ce que ce téléphone contient déjà est conservé et regroupé avec vos anciennes données.</p>
+        <ion-button expand="block" [disabled]="redeeming() || typedCode().trim().length < 16" (click)="redeem()">
+          {{ redeeming() ? 'Récupération…' : 'Retrouver mes données' }}
+        </ion-button>
+        @if (redeemError()) { <p class="error" role="alert">{{ redeemError() }}</p> }
+      }
+    </section>
+  }
+</ion-content>

@@ -1,0 +1,51 @@
+<ng-template #visual let-tile>
+  @if (tile.image && !brokenImages().has(tile.image)) {
+    <img class="tile-image" [src]="tile.image" alt="" (error)="imageFailed(tile.image)" />
+  } @else if (tile.icon) {
+    <ion-icon class="tile-icon" [name]="tile.icon" aria-hidden="true" />
+  }
+  <span class="tile-word">{{ tile.label }}</span>
+</ng-template>
+
+@if (audio.enabled() && audio.blocked()) {
+  <button type="button" class="sound-unlock" (click)="unlockSound()">
+    <ion-icon name="volume-high-outline" aria-hidden="true" />
+    Touchez ici pour entendre
+  </button>
+}
+
+@if (confirming(); as tile) {
+  <div class="confirm" role="group" [attr.aria-label]="'Confirmer : ' + tile.label">
+    <div class="tile is-active is-confirming" [class.is-none]="tile.none">
+      <ng-container *ngTemplateOutlet="visual; context: { $implicit: tile }" />
+    </div>
+    <div class="confirm-actions">
+      <button type="button" class="confirm-yes" aria-label="Oui, je confirme" (click)="confirm(tile)">
+        <ion-icon name="checkmark" aria-hidden="true" />
+      </button>
+      <button type="button" class="confirm-no" aria-label="Non, revenir aux choix" (click)="cancel()">
+        <ion-icon name="arrow-undo" aria-hidden="true" />
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="tiles">
+    @for (tile of tiles(); track tile.id; let i = $index) {
+      <button
+        type="button"
+        class="tile"
+        [class.is-active]="i === active()"
+        [class.is-selected]="selected().includes(tile.id)"
+        [class.is-none]="tile.none"
+        [attr.aria-pressed]="selected().includes(tile.id)"
+        [attr.aria-label]="tile.label"
+        (click)="pick(tile)"
+      >
+        <ng-container *ngTemplateOutlet="visual; context: { $implicit: tile }" />
+        @if (selected().includes(tile.id)) {
+          <span class="tile-check" aria-hidden="true"><ion-icon name="checkmark" /></span>
+        }
+      </button>
+    }
+  </div>
+}

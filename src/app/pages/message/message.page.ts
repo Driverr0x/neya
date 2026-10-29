@@ -1,10 +1,15 @@
 import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import {
+  IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonTextarea, IonTitle, IonToolbar,
+} from '@ionic/angular';
+import { BrandHeaderComponent } from '../../shared/brand-header.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { addIcons } from 'ionicons';
 import {
   callOutline,
   chatbubblesOutline,
+  keyOutline,
   cloudOfflineOutline,
   lockClosedOutline,
   micOutline,
@@ -15,7 +20,9 @@ import { map } from 'rxjs';
 import { PROFESSIONALS, SPECIALTY_LABEL } from '../core/data';
 import { Professional } from '../core/models';
 import { StoreService } from '../core/store.service';
+import { formatMoment } from '../core/dates';
 import { BackendService, PlatformDoctor, PlatformMessage } from '../core/backend.service';
+import { savedRecoveryCode } from '../recovery/recovery.page';
 
 interface ConversationDisplayMessage {
   id: string;
@@ -24,13 +31,19 @@ interface ConversationDisplayMessage {
   audioUrl?: string;
   createdAt: Date;
   status: 'pending' | 'sent';
+  /** Message reçu du professionnel (affiché à gauche), sinon envoyé par l'utilisatrice. */
+  fromPro: boolean;
 }
 
 @Component({
   selector: 'app-message',
   templateUrl: './message.page.html',
   styleUrls: ['./message.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    RouterLink, BrandHeaderComponent,
+    IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonTextarea, IonTitle, IonToolbar,
+  ],
 })
 export class MessagePage implements OnDestroy {
   readonly store = inject(StoreService);
@@ -44,11 +57,18 @@ export class MessagePage implements OnDestroy {
   readonly professional = signal<Professional | PlatformDoctor | undefined>(undefined);
   readonly remoteMessages = signal<PlatformMessage[]>([]);
   readonly conversationId = signal('');
+  /** Identifiant de la session de l'utilisatrice, pour reconnaître ses propres messages. */
+  private readonly visitorId = signal('');
   readonly messageError = signal('');
+  /** Après un premier message, on propose une fois le code pour ne pas perdre la conversation. */
+  readonly suggestRecovery = computed(() =>
+    this.backend.configured && !savedRecoveryCode() && this.conversation().some((message) => !message.fromPro));
   readonly conversation = computed<ConversationDisplayMessage[]>(() => {
     if (!this.backend.configured) {
       const proId = this.proId();
-      return proId ? this.store.messages().filter((message) => message.proId === proId) : [];
+      return proId
+        ? this.store.messages().filter((message) => message.proId === proId).map((message) => ({ ...message, fromPro: false }))
+        : [];
     }
     return this.remoteMessages().map((message) => ({
       id: message.id,
@@ -57,6 +77,7 @@ export class MessagePage implements OnDestroy {
       audioUrl: message.audioUrl,
       createdAt: new Date(message.created_at),
       status: 'sent',
+      fromPro: !!this.visitorId() && message.sender_id !== this.visitorId(),
     }));
   });
   readonly draft = signal('');
@@ -77,6 +98,7 @@ export class MessagePage implements OnDestroy {
       callOutline,
       chatbubblesOutline,
       cloudOfflineOutline,
+      keyOutline,
       lockClosedOutline,
       micOutline,
       sendOutline,
@@ -216,7 +238,7 @@ export class MessagePage implements OnDestroy {
   }
 
   formatTime(date: Date): string {
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return formatMoment(date);
   }
 
   phoneHref(phone: string): string {
@@ -252,7 +274,7 @@ export class MessagePage implements OnDestroy {
         this.professional.set(PROFESSIONALS.find((item) => item.id === id));
         return;
       }
-      await this.backend.ensureVisitorSession();
+      this.visitorId.set((await this.backend.ensureVisitorSession()).id);
       const doctor = await this.backend.doctorById(id);
       this.professional.set(doctor ?? undefined);
       if (!doctor) return;

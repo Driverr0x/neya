@@ -42,11 +42,64 @@
             }
             @for (doctor of doctors(); track doctor.id) {
               <article class="list-row">
-                <div><strong>{{ doctor.display_name }}</strong><p>{{ doctor.specialty || 'Spécialité non renseignée' }} · {{ doctor.status }}</p></div>
+                <div><strong>{{ doctor.display_name }}</strong><p>{{ specialtyName(doctor.specialty) }}
+                    @if (doctor.order_number) { · N° d’ordre {{ doctor.order_number }} }
+                    @if (doctor.status !== 'active') { · {{ doctor.status === 'pending' ? 'vérification NEYA en cours' : 'suspendu' }} }</p></div>
                 <span>{{ doctor.phone }}</span>
               </article>
             } @empty {
               <p class="empty">Aucun médecin n’est encore associé à cette structure.</p>
+            }
+          </section>
+
+          <section class="panel">
+            <p class="eyebrow">SUIVI DES CAS</p>
+            <h2>Résumés reçus</h2>
+            <p class="panel-hint">Envoyés par les utilisatrices après leur évaluation, avec leur accord. Appelez-les, puis tenez le suivi à jour.</p>
+            @for (referral of referrals(); track referral.id) {
+              <article class="referral-row" [attr.data-level]="referral.level">
+                <div class="referral-head">
+                  <div>
+                    <strong>{{ referral.full_name }}</strong>
+                    <p><a [href]="'tel:' + referral.phone">{{ referral.phone }}</a> · reçu {{ formatTime(referral.created_at) }}</p>
+                  </div>
+                  <span class="level-pill">Niveau {{ referral.level }}</span>
+                </div>
+                @if (referral.ai_summary) {
+                  <div class="referral-ai-note">
+                    <p>{{ referral.ai_summary }}</p>
+                    <small>Note rédigée par IA à partir de l’auto-évaluation, relue et acceptée par la patiente. Ce n’est pas un diagnostic.</small>
+                  </div>
+                }
+                <ul class="referral-facts">
+                  <li><b>Résultat :</b> {{ referral.title }}</li>
+                  @if (referral.age_range) { <li><b>Âge :</b> {{ referral.age_range }}</li> }
+                  <li><b>Changements signalés :</b> {{ referral.symptoms.length ? referral.symptoms.join(', ') : 'aucun' }}</li>
+                  <li><b>Langue :</b> {{ languageName(referral.language) }}@if (referral.city) { · <b>Ville :</b> {{ referral.city }} }</li>
+                </ul>
+                <div class="case-editor">
+                  <label>
+                    Suivi du cas
+                    <select [value]="caseDraft(referral).status" (change)="editCase(referral, { status: $any($event.target).value })">
+                      @for (status of caseStatuses; track status.value) {
+                        <option [value]="status.value">{{ status.label }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label>
+                    Note interne (résultats, traitement, prochain rendez-vous…)
+                    <textarea rows="2" maxlength="2000" [value]="caseDraft(referral).note" (input)="editCase(referral, { note: $any($event.target).value })"></textarea>
+                  </label>
+                  <div class="case-actions">
+                    <span class="status-pill" [attr.data-case]="referral.case_status">{{ caseLabel(referral.case_status) }}</span>
+                    <button class="primary-button" type="button" [disabled]="!caseChanged(referral) || savingCaseId() === referral.id" (click)="saveCase(referral)">
+                      {{ savingCaseId() === referral.id ? 'Enregistrement…' : 'Enregistrer le suivi' }}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty">Aucun résumé reçu pour le moment.</p>
             }
           </section>
 
@@ -59,7 +112,8 @@
                   <strong>{{ booking.full_name }}</strong>
                   <p>
                     @if (booking.kind === 'screening') {
-                      {{ booking.screening_events?.title || 'Dépistage' }} · {{ booking.screening_events?.starts_at ? formatTime(booking.screening_events.starts_at) : '' }}
+                      {{ booking.screening_events?.title || 'Dépistage' }}
+                      @if (booking.screening_events?.starts_at) { · {{ formatRange(booking.screening_events!.starts_at, booking.screening_events!.ends_at) }} }
                     } @else {
                       Rendez-vous · {{ booking.slot_label || 'Horaire à confirmer' }}
                     }
@@ -67,7 +121,7 @@
                   <a [href]="'tel:' + booking.phone">{{ booking.phone }}</a>
                 </div>
                 <div class="booking-actions">
-                  <span class="status-pill">{{ booking.status }}</span>
+                  <span class="status-pill" [attr.data-status]="booking.status">{{ bookingStatus(booking.status) }}</span>
                   @if (booking.status === 'requested') {
                     <button type="button" (click)="updateBooking(booking, 'confirmed')">Confirmer</button>
                     <button type="button" class="text-button" (click)="updateBooking(booking, 'cancelled')">Annuler</button>
@@ -82,14 +136,30 @@
           <section class="panel">
             <p class="eyebrow">PRÉVENTION</p>
             <h2>Programmer un dépistage</h2>
-            <label>Titre<input type="text" [value]="screeningTitle()" (input)="screeningTitle.set($any($event.target).value)" /></label>
-            <label>Description<textarea rows="2" [value]="screeningDescription()" (input)="screeningDescription.set($any($event.target).value)"></textarea></label>
-            <label>Lieu<input type="text" [value]="screeningLocation()" (input)="screeningLocation.set($any($event.target).value)" /></label>
-            <div class="form-grid">
-              <label>Début<input type="datetime-local" [value]="screeningStartsAt()" (input)="screeningStartsAt.set($any($event.target).value)" /></label>
-              <label>Fin<input type="datetime-local" [value]="screeningEndsAt()" (input)="screeningEndsAt.set($any($event.target).value)" /></label>
+            <label>Titre<input type="text" placeholder="Ex. Dépistage gratuit du cancer du sein" [value]="screeningTitle()" (input)="screeningTitle.set($any($event.target).value)" /></label>
+            <label>Description (facultatif)<textarea rows="2" [value]="screeningDescription()" (input)="screeningDescription.set($any($event.target).value)"></textarea></label>
+            <label>Lieu<input type="text" placeholder="Ex. Salle polyvalente, secteur 15" [value]="screeningLocation()" (input)="screeningLocation.set($any($event.target).value)" /></label>
+            <label>Date<input type="date" [min]="today" [value]="screeningDate()" (input)="screeningDate.set($any($event.target).value)" /></label>
+            <div class="field-row">
+              <label>Heure de début<input type="time" [value]="screeningStartTime()" (input)="screeningStartTime.set($any($event.target).value)" /></label>
+              <label>Heure de fin<input type="time" [value]="screeningEndTime()" (input)="screeningEndTime.set($any($event.target).value)" /></label>
             </div>
+            @if (screeningPreview(); as preview) {
+              <p class="schedule-preview"><ion-icon name="calendar-outline" aria-hidden="true" /> {{ preview }}</p>
+            }
             <button class="primary-button" type="button" [disabled]="busy()" (click)="createScreening()">Publier le dépistage</button>
+
+            @if (screenings().length) {
+              <h3 class="sub-heading">Dépistages programmés</h3>
+              @for (screening of screenings(); track screening.id) {
+                <article class="list-row">
+                  <div>
+                    <strong>{{ screening.title }}</strong>
+                    <p>{{ formatRange(screening.starts_at, screening.ends_at) }} · {{ screening.location }}</p>
+                  </div>
+                </article>
+              }
+            }
           </section>
 
           <section class="panel">
@@ -98,7 +168,7 @@
             @for (video of videos(); track video.id) {
               <article class="video-row">
                 @if (video.videoUrl) { <video controls playsinline preload="metadata" [src]="video.videoUrl"></video> }
-                <div><strong>{{ video.title }}</strong><p>{{ video.description }} · {{ video.language }} · {{ video.published ? 'publiée' : 'brouillon' }}</p></div>
+                <div><strong>{{ video.title }}</strong><p>{{ video.description }} · {{ languageName(video.language) }} · {{ video.published ? 'publiée' : 'brouillon' }}</p></div>
               </article>
             } @empty {
               <p class="empty">Aucune vidéo publiée.</p>
@@ -106,6 +176,18 @@
           </section>
         }
       }
+    } @else if (profile()?.role === 'doctor' && profile()?.status !== 'active') {
+      <section class="panel pending-panel">
+        <h2>{{ profile()?.status === 'pending' ? 'Vérification en cours' : 'Compte suspendu' }}</h2>
+        @if (profile()?.status === 'pending') {
+          <p>
+            L’équipe NEYA vérifie votre numéro d’ordre <strong>{{ profile()?.order_number }}</strong>.
+            Votre profil sera visible des utilisatrices, et la messagerie ouverte, dès la validation.
+          </p>
+        } @else {
+          <p>Votre compte a été suspendu par l’équipe NEYA. Contactez votre structure pour en savoir plus.</p>
+        }
+      </section>
     } @else if (profile()?.role === 'doctor') {
       <section class="panel">
         <div class="section-heading">

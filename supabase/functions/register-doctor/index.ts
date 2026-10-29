@@ -1,4 +1,4 @@
-import { handleOptions, jsonResponse, serviceClient, sha256, verifiedUser } from '../_shared/http.ts';
+import { handleOptions, jsonResponse, serviceClient, sha256, verifiedUser, errorMessage } from '../_shared/http.ts';
 
 Deno.serve(async (request: Request) => {
   const options = handleOptions(request);
@@ -16,9 +16,13 @@ Deno.serve(async (request: Request) => {
     const specialty = body.specialty;
     const languages = body.languages;
     const bio = typeof body.bio === 'string' ? body.bio.trim() : '';
+    const orderNumber = typeof body.orderNumber === 'string' ? body.orderNumber.trim() : '';
     if (displayName.length < 2 || displayName.length > 120 || phone.length > 32 ||
       inviteCode.length < 24 || inviteCode.length > 128) {
       return jsonResponse({ error: 'Please provide a valid name, phone, and invitation code' }, 400);
+    }
+    if (orderNumber.length < 3 || orderNumber.length > 40) {
+      return jsonResponse({ error: 'Please provide a valid order number' }, 400);
     }
     if (!['sage-femme', 'medecin', 'psychologue'].includes(specialty) ||
       !Array.isArray(languages) || languages.length === 0 || languages.length > 3 ||
@@ -36,12 +40,13 @@ Deno.serve(async (request: Request) => {
       p_specialty: specialty,
       p_languages: languages,
       p_bio: bio,
+      p_order_number: orderNumber,
     });
     if (error) throw error;
     return jsonResponse({ structureId, role: 'doctor' }, 201);
   } catch (error) {
     console.error('Doctor registration failed:', error);
-    const message = error instanceof Error ? error.message : 'Doctor registration failed';
+    const message = errorMessage(error, 'Doctor registration failed');
     return jsonResponse({ error: message }, 400);
   }
 });

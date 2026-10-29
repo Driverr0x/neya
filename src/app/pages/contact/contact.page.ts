@@ -2,18 +2,20 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, 
-  IonList, IonItem, IonLabel, IonIcon, IonBadge, IonButton
+  IonList, IonItem, IonLabel, IonIcon, IonBadge, IonButton, IonButtons, IonBackButton
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   callOutline,
   chatbubbleEllipsesOutline,
+  keyOutline,
+  logoWhatsapp,
   personCircleOutline,
   sparklesOutline,
 } from 'ionicons/icons';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
-import { LANG_LABEL, PROFESSIONALS, SPECIALTY_LABEL } from '../core/data';
+import { LANG_LABEL, PROFESSIONALS, SPECIALTY_LABEL, isLang } from '../core/data';
 import { Lang, Professional, Specialty } from '../core/models';
 import { StoreService } from '../core/store.service';
 import { BrandHeaderComponent } from '../../shared/brand-header.component';
@@ -24,7 +26,7 @@ import { BackendService, PlatformDoctor } from '../core/backend.service';
   standalone: true,
   imports: [
     RouterLink, BrandHeaderComponent, IonHeader, IonToolbar, IonTitle, IonContent, 
-    IonList, IonItem, IonLabel, IonIcon, IonBadge, IonButton
+    IonList, IonItem, IonLabel, IonIcon, IonBadge, IonButton, IonButtons, IonBackButton
   ],
   templateUrl: './contact.page.html',
   styleUrls: ['./contact.page.scss'],
@@ -32,7 +34,7 @@ import { BackendService, PlatformDoctor } from '../core/backend.service';
 export class ContactPage {
   store = inject(StoreService);
   spec = SPECIALTY_LABEL;
-  private readonly backend = inject(BackendService);
+  readonly backend = inject(BackendService);
   readonly platformPros = signal<PlatformDoctor[] | null>(null);
   readonly directoryError = signal('');
 
@@ -74,8 +76,20 @@ export class ContactPage {
     return `tel:${phone.replace(/\s+/g, '')}`;
   }
 
+  /**
+   * Lien WhatsApp vers le numéro du professionnel (indicatif du Burkina Faso ajouté s'il manque).
+   * Le message prérempli reste général : aucune information de santé ne passe dans l'adresse.
+   */
+  whatsappHref(phone: string): string | null {
+    let digits = phone.replace(/\D/g, '');
+    if (digits.startsWith('00')) digits = digits.slice(2);
+    if (digits.length === 8) digits = `226${digits}`;
+    if (digits.length < 10) return null;
+    return `https://wa.me/${digits}?text=${encodeURIComponent('Bonjour, je vous contacte depuis l’application NEYA.')}`;
+  }
+
   constructor() {
-    addIcons({ callOutline, chatbubbleEllipsesOutline, personCircleOutline, sparklesOutline });
+    addIcons({ callOutline, chatbubbleEllipsesOutline, keyOutline, logoWhatsapp, personCircleOutline, sparklesOutline });
     void this.loadDirectory();
   }
 
@@ -94,7 +108,7 @@ export class ContactPage {
   }
 
   private languageParam(value: string | null): Lang {
-    if (value === 'fr' || value === 'moore' || value === 'dioula') return value;
+    if (isLang(value)) return value;
     return this.store.answers().language ?? 'fr';
   }
 }

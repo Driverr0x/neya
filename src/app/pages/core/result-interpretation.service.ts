@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BackendService } from './backend.service';
 import { Lang, OrientationResult } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class ResultInterpretationService {
-  constructor(private readonly backend: BackendService) {}
+  private readonly backend = inject(BackendService);
 
   get aiAvailable(): boolean {
     return this.backend.configured;

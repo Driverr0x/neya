@@ -1,6 +1,11 @@
 <ion-header>
   <app-brand-header />
   <ion-toolbar>
+    @if (routeProId()) {
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/tabs/contact" text="Retour" />
+      </ion-buttons>
+    }
     <ion-title>{{ selectedPro()?.name ?? 'Contacter un professionnel' }}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -23,6 +28,16 @@
         <ion-button expand="block" [routerLink]="['/tabs/messages', professional.id]">
           <ion-icon slot="start" name="chatbubble-ellipses-outline" />
           Envoyer un message
+        </ion-button>
+        @if (whatsappHref(professional.phone); as whatsapp) {
+          <ion-button expand="block" class="whatsapp-button" [href]="whatsapp" target="_blank" rel="noopener">
+            <ion-icon slot="start" name="logo-whatsapp" />
+            Écrire sur WhatsApp
+          </ion-button>
+        }
+        <ion-button expand="block" fill="outline" [href]="phoneHref(professional.phone)">
+          <ion-icon slot="start" name="call-outline" />
+          Appeler
         </ion-button>
       } @else {
         <p class="hospital-phone">
@@ -80,9 +95,20 @@
             <b [style.color]="q.status === 'sent' ? 'var(--neya-l1, #28a745)' : 'var(--neya-l2, #ffc107)'">
               {{ q.status === 'sent' ? 'envoyé' : 'en attente d’envoi' }}
             </b>
+            @if (q.error) { <br /><small>Dernier essai : {{ q.error }}</small> }
           </p>
         }
       </div>
+    }
+
+    @if (backend.configured) {
+      <a class="card recovery-link" routerLink="/tabs/recuperation">
+        <ion-icon name="key-outline" color="primary" />
+        <span>
+          <strong>Changement de téléphone ?</strong>
+          Gardez un code pour retrouver vos messages, ou utilisez celui que vous avez déjà.
+        </span>
+      </a>
     }
   }
 </ion-content>

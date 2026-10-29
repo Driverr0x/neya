@@ -13,13 +13,13 @@ ion-content {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 24px;
+  padding: 24px 16px;
   text-align: center;
 
   .logo-stage {
     position: relative;
     display: grid;
-    width: min(64vw, 230px);
+    width: min(48vw, 170px);
     aspect-ratio: 1;
     place-items: center;
     isolation: isolate;
@@ -61,26 +61,37 @@ ion-content {
     animation: settle-in 0.65s ease-out 1.2s both;
   }
 
+  .sound-choice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 8px 16px;
+    border: 1px solid var(--neya-pink);
+    border-radius: 999px;
+    background: var(--neya-surface);
+    color: var(--neya-pink);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    animation: settle-in 0.65s ease-out 1.25s both;
+
+    ion-icon {
+      font-size: 1.3rem;
+    }
+
+    &.is-off {
+      border-color: var(--neya-beige-dark);
+      color: var(--neya-muted);
+    }
+  }
+
   .language-picker {
-    display: grid;
-    justify-items: start;
-    width: min(100%, 260px);
+    width: min(100%, 340px);
     margin: 0 0 16px;
-    color: var(--neya-muted);
-    font-size: 0.85rem;
-    text-align: left;
     opacity: 0;
     animation: settle-in 0.65s ease-out 1.32s both;
-
-    ion-select {
-      width: 100%;
-      min-height: 42px;
-      padding: 0 12px;
-      border: 1px solid var(--neya-beige-dark);
-      border-radius: 10px;
-      background: var(--neya-surface);
-      color: var(--neya-text);
-    }
   }
 
   .continue-button {
@@ -90,14 +101,6 @@ ion-content {
     --box-shadow: 0 8px 20px rgba(214, 51, 108, 0.2);
     opacity: 0;
     animation: settle-in 0.65s ease-out 1.45s both;
-  }
-
-  .audio-message {
-    max-width: 280px;
-    margin: 8px 0;
-    color: var(--neya-text);
-    font-size: 0.85rem;
-    line-height: 1.4;
   }
 
   .professional-link {
@@ -167,6 +170,7 @@ ion-content {
     animation-delay: 0ms;
   }
 
+  .logo-page .sound-choice,
   .logo-page .language-picker,
   .logo-page .professional-link {
     animation-duration: 0.01ms;

@@ -53,6 +53,9 @@ export class ConfirmationPage {
   }
 
   get description() {
+    if (this.rdv && this.pending) {
+      return `Votre demande auprès de ${this.pro} (${this.slot}) est enregistrée sur ce téléphone.`;
+    }
     if (this.rdv && this.requestSent) {
       return `Votre demande auprès de ${this.pro} a été transmise. La structure vous contactera pour confirmer le créneau ${this.slot}.`;
     }

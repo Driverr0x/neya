@@ -6,14 +6,28 @@ import {
   ScreeningEvent,
   Specialty,
   Structure,
+  TalkingTile,
   Video,
 } from './models';
 
 export const LANG_LABEL: Record<Lang, string> = {
   fr: 'Français',
+  en: 'English',
   moore: 'Mooré',
   dioula: 'Dioula',
 };
+
+export function isLang(value: unknown): value is Lang {
+  return typeof value === 'string' && Object.hasOwn(LANG_LABEL, value);
+}
+
+/** Ordre de la boucle d'accueil : chaque langue est prononcée dans sa propre langue. */
+export const LANGUAGE_TILES: TalkingTile[] = [
+  { id: 'fr', label: 'Français', audio: 'fr/langue', fallback: { text: 'Français', lang: 'fr' }, icon: 'chatbubble-ellipses-outline' },
+  { id: 'en', label: 'English', audio: 'en/langue', fallback: { text: 'English', lang: 'en' }, icon: 'chatbubble-ellipses-outline' },
+  { id: 'moore', label: 'Mooré', audio: 'moore/langue', icon: 'chatbubble-ellipses-outline' },
+  { id: 'dioula', label: 'Dioula', audio: 'dioula/langue', icon: 'chatbubble-ellipses-outline' },
+];
 
 export const SPECIALTY_LABEL: Record<Specialty, string> = {
   'sage-femme': 'Sage-femme',
@@ -21,54 +35,33 @@ export const SPECIALTY_LABEL: Record<Specialty, string> = {
   psychologue: 'Psychologue',
 };
 
+/**
+ * Vidéos de NEYA intégrées à l'application : elles marchent sans connexion.
+ * Les vidéos publiées par les médecins s'y ajoutent quand le serveur est joignable.
+ * Fichiers compressés (H.264 720p, environ 0,5 Mb/s) : les originaux restent hors du dépôt, dans media/.
+ */
 export const VIDEOS: Video[] = [
   {
-    id: 'depistage',
+    id: 'sensibilisation',
     title: 'Comprendre le dépistage du cancer du sein',
     author: 'Équipe de santé NEYA',
-    duration: '4 min',
+    duration: '2 min 17',
     lang: 'fr',
-    src: 'assets/VID_20261014_000748.mp4',
+    src: 'assets/videos/sensibilisation-cancer-sein.mp4',
+    poster: 'assets/videos/sensibilisation-cancer-sein.jpg',
     description:
       'Une présentation générale du dépistage, des signes à surveiller et des façons de demander conseil à un professionnel de santé.',
   },
-  {
-    id: 'signes',
-    title: 'Les signes qui doivent amener à consulter',
-    author: 'Équipe de santé NEYA',
-    duration: '3 min',
-    lang: 'fr',
-    src: 'assets/VID_20261014_000748.mp4',
-    description:
-      'Apprenez à reconnaître les changements qui justifient de demander un avis médical, sans remplacer un examen professionnel.',
-  },
-  {
-    id: 'prevention',
-    title: 'Prévention et suivi',
-    author: 'Équipe de santé NEYA',
-    duration: '5 min',
-    lang: 'moore',
-    src: 'assets/VID_20261014_000748.mp4',
-    description:
-      'Des informations pratiques pour parler de prévention et de suivi avec un professionnel de santé.',
-  },
-  {
-    id: 'conseils',
-    title: 'Conseils pour prendre soin de sa santé',
-    author: 'Équipe de santé NEYA',
-    duration: '4 min',
-    lang: 'dioula',
-    src: 'assets/VID_20261014_000748.mp4',
-    description:
-      'Des repères simples pour préparer une consultation et trouver un service de santé adapté.',
-  },
 ];
 
-const choice = (value: string | number, label: string, icon: string) => ({
+const choice = (value: string | number, label: string, icon: string, image?: string) => ({
   value,
   label,
   icon,
+  image,
 });
+
+const symptomImage = (name: string) => `assets/symptoms/${name}.png`;
 
 export const QUESTIONS: Question[] = [
   {
@@ -84,13 +77,15 @@ export const QUESTIONS: Question[] = [
   {
     id: 'symptoms',
     title: 'Avez-vous remarqué un changement qui vous inquiète ?',
-    hint: 'Sélectionnez tout ce qui s’applique, puis appuyez sur Continuer.',
+    hint: 'Touchez une image quand elle s’allume, confirmez, puis appuyez sur Continuer.',
     multi: true,
     options: [
-      choice('lump', 'Une boule ou une grosseur', 'ellipse-outline'),
-      choice('change', 'Un changement de peau ou du mamelon', 'alert-circle-outline'),
-      choice('pain', 'Une douleur persistante', 'heart-outline'),
-      choice('none', 'Non, aucun changement remarqué', 'checkmark-circle-outline'),
+      choice('lump', 'Une boule ou une grosseur', 'ellipse-outline', symptomImage('lump')),
+      choice('orange-peel', 'Peau d’orange', 'grid-outline', symptomImage('orange-peel')),
+      choice('discharge', 'Écoulement anormal', 'water-outline', symptomImage('discharge')),
+      choice('change', 'Un mamelon qui rentre ou change', 'alert-circle-outline', symptomImage('nipple')),
+      choice('pain', 'Une douleur persistante', 'heart-outline', symptomImage('pain')),
+      choice('none', 'Pas de symptômes', 'close-circle-outline', symptomImage('none')),
     ],
   },
   {
@@ -98,6 +93,7 @@ export const QUESTIONS: Question[] = [
     title: 'Dans quelle langue préférez-vous échanger ?',
     options: [
       choice('fr', 'Français', 'chatbubble-outline'),
+      choice('en', 'English', 'chatbubble-outline'),
       choice('moore', 'Mooré', 'chatbubble-outline'),
       choice('dioula', 'Dioula', 'chatbubble-outline'),
     ],

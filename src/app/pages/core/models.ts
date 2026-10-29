@@ -1,4 +1,4 @@
-export type Lang = 'fr' | 'moore' | 'dioula';
+export type Lang = 'fr' | 'en' | 'moore' | 'dioula';
 
 export type Specialty = 'sage-femme' | 'medecin' | 'psychologue';
 
@@ -9,6 +9,8 @@ export interface Video {
   duration: string;
   lang: Lang;
   src: string;
+  /** Image affichée avant la lecture : rien n'est téléchargé tant qu'on n'appuie pas sur lecture. */
+  poster?: string;
   description: string;
 }
 
@@ -46,6 +48,21 @@ export interface QuestionOption {
   value: string | number;
   label: string;
   icon: string;
+  image?: string;
+}
+
+/** Tuile parlante : elle s'allume, affiche son mot et le prononce à son tour dans la boucle. */
+export interface TalkingTile {
+  id: string;
+  label: string;
+  /** Enregistrement préenregistré, relatif à assets/audio/ et sans extension (ex. « moore/langue »). */
+  audio: string;
+  /** Lecture par synthèse vocale tant que l'enregistrement n'existe pas (fr et en uniquement). */
+  fallback?: { text: string; lang: Lang };
+  icon?: string;
+  image?: string;
+  /** Tuile « croix » (aucun symptôme). */
+  none?: boolean;
 }
 
 export interface Question {
@@ -69,12 +86,28 @@ export interface OrientationResult {
   simpleExplanation?: string;
   explanationSource?: 'rules' | 'ai';
   at?: number;
+  /** Résumé envoyé à une structure avec l'accord de l'utilisatrice. */
+  referral?: { structureName: string; at: number };
+}
+
+/** Demande à envoyer à Supabase (rendez-vous ou inscription à un dépistage). */
+export interface BookingPayload {
+  structureId: string;
+  kind: 'appointment' | 'screening';
+  fullName: string;
+  phone: string;
+  slotLabel?: string;
+  screeningEventId?: string;
 }
 
 export interface QueueItem {
   id: string;
   kind: 'appointment' | 'message';
   status: 'pending' | 'sent';
+  /** Présent tant que la demande attend d'être envoyée au serveur ; retiré une fois envoyée. */
+  booking?: BookingPayload;
+  /** Dernier échec d'envoi, affiché à l'utilisatrice. */
+  error?: string;
   name?: string;
   proName?: string;
   proId?: string;

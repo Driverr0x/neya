@@ -6,20 +6,34 @@ import {
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import * as icons from 'ionicons/icons';
-import { Answers, Question } from '../core/models';
-import { QUESTIONS, LANG_LABEL, SPECIALTY_LABEL, VIDEOS } from '../core/data';
+import { Answers, Lang, Question, QuestionOption, TalkingTile } from '../core/models';
+import { QUESTIONS, LANG_LABEL, SPECIALTY_LABEL, VIDEOS, isLang } from '../core/data';
 import { OrientationService } from '../core/orientation.service';
 import { ResultInterpretationService } from '../core/result-interpretation.service';
 import { StoreService } from '../core/store.service';
 import { BrandHeaderComponent } from '../../shared/brand-header.component';
 import { AudioGuideService } from '../core/audio-guide.service';
+import { TalkingTilesComponent } from '../../shared/talking-tiles.component';
+import { ReferralCardComponent } from '../../shared/referral-card.component';
+import { AiQuestionsComponent } from '../../shared/ai-questions.component';
+import { BackendService } from '../core/backend.service';
+
+/** Lecture des tuiles en anglais par la voix du téléphone (le mooré et le dioula utilisent des enregistrements). */
+const SYMPTOM_LABEL_EN: Record<string, string> = {
+  lump: 'A lump or a swelling',
+  'orange-peel': 'Orange peel skin',
+  discharge: 'Unusual discharge',
+  change: 'A nipple that turns inward or changes',
+  pain: 'Persistent pain',
+  none: 'No symptoms',
+};
 
 @Component({
   selector: 'app-questionnaire',
   standalone: true,
   imports: [
     RouterLink, BrandHeaderComponent, IonHeader, IonToolbar, IonTitle, IonContent, 
-    IonButton, IonIcon, IonProgressBar, IonSpinner, IonButtons
+    IonButton, IonIcon, IonProgressBar, IonSpinner, IonButtons, TalkingTilesComponent, ReferralCardComponent, AiQuestionsComponent
   ],
   templateUrl: './questionnaire.page.html',
   styleUrls: ['./questionnaire.page.scss'],
@@ -27,8 +41,9 @@ import { AudioGuideService } from '../core/audio-guide.service';
 export class QuestionnairePage {
   store = inject(StoreService);
   private orient = inject(OrientationService);
-  private readonly audioGuide = inject(AudioGuideService);
+  readonly audioGuide = inject(AudioGuideService);
   readonly interpretation = inject(ResultInterpretationService);
+  readonly backend = inject(BackendService);
   
   spec = SPECIALTY_LABEL; 
   lang = LANG_LABEL;
@@ -40,13 +55,43 @@ export class QuestionnairePage {
   aiLoading = signal(false);
   aiError = signal('');
   audioMessage = signal('');
+  /** Choix touché mais pas encore confirmé (questions à réponse unique). */
+  pendingChoice = signal<{ question: Question; option: QuestionOption } | null>(null);
 
   /** Questionnaire adaptatif : les questions non pertinentes sont retirées selon les réponses. */
   questions = computed(() => QUESTIONS.filter(q => !q.showIf || q.showIf(this.answers())));
   q = computed(() => this.questions()[this.step()]);
 
+  /** Les symptômes s'affichent en tuiles parlantes ; « none » est la tuile croix. */
+  symptomTiles = computed<TalkingTile[]>(() => {
+    const current = this.q();
+    if (current?.id !== 'symptoms') return [];
+    const language = this.selectedLanguage();
+    return current.options.map((option) => ({
+      id: String(option.value),
+      label: option.label,
+      audio: `${language}/symptome-${option.value}`,
+      fallback: language === 'en'
+        ? { text: SYMPTOM_LABEL_EN[String(option.value)] ?? option.label, lang: 'en' }
+        : { text: option.label, lang: 'fr' },
+      icon: option.icon,
+      image: option.image,
+      none: option.value === 'none',
+    }));
+  });
+  tilesRunning = computed(() => !this.loading() && !this.store.result() && this.symptomTiles().length > 0);
+
   constructor() { 
     addIcons(icons); 
+  }
+
+  chooseSymptom(question: Question, tile: TalkingTile): void {
+    if (tile.none) {
+      this.answers.update((a) => ({ ...a, [question.id]: ['none'] }));
+      void this.next();
+      return;
+    }
+    this.pick(question, tile.id);
   }
 
   isSel(q: Question, v: string | number) {
@@ -54,6 +99,32 @@ export class QuestionnairePage {
     return q.multi
       ? Array.isArray(current) && current.includes(String(v))
       : current === v;
+  }
+
+  /** Réponse unique : on montre le choix et on attend la confirmation avant de passer à la suite. */
+  propose(question: Question, option: QuestionOption): void {
+    this.pendingChoice.set({ question, option });
+    if (this.audioGuide.enabled()) {
+      this.audioGuide.speak(`Vous avez choisi : ${option.label}. C’est bien ça ?`, this.selectedLanguage());
+    }
+  }
+
+  confirmChoice(): void {
+    const pending = this.pendingChoice();
+    if (!pending) return;
+    this.pendingChoice.set(null);
+    this.audioGuide.stop();
+    this.pick(pending.question, pending.option.value);
+  }
+
+  cancelChoice(): void {
+    this.pendingChoice.set(null);
+    this.audioGuide.stop();
+  }
+
+  previous(): void {
+    this.pendingChoice.set(null);
+    this.step.update((s) => s - 1);
   }
 
   pick(q: Question, v: string | number) {
@@ -138,6 +209,7 @@ export class QuestionnairePage {
   }
 
   restart() { 
+    this.pendingChoice.set(null);
     this.answers.set({}); 
     this.step.set(0); 
     this.store.setResult(null); 
@@ -147,8 +219,8 @@ export class QuestionnairePage {
     return VIDEOS.find(v => v.id === id)?.title ?? ''; 
   }
 
-  private selectedLanguage(): 'fr' | 'moore' | 'dioula' {
+  private selectedLanguage(): Lang {
     const value = localStorage.getItem('neya-language');
-    return value === 'moore' || value === 'dioula' ? value : 'fr';
+    return isLang(value) ? value : 'fr';
   }
 }

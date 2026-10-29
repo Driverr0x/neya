@@ -1,4 +1,4 @@
-import { handleOptions, jsonResponse, serviceClient, verifiedUser } from '../_shared/http.ts';
+import { handleOptions, jsonResponse, serviceClient, verifiedUser, errorMessage } from '../_shared/http.ts';
 
 Deno.serve(async (request: Request) => {
   const options = handleOptions(request);
@@ -45,7 +45,7 @@ Deno.serve(async (request: Request) => {
     }, 201);
   } catch (error) {
     console.error('Structure registration failed:', error);
-    const message = error instanceof Error ? error.message : 'Structure registration failed';
+    const message = errorMessage(error, 'Structure registration failed');
     return jsonResponse({ error: message }, 400);
   }
 });

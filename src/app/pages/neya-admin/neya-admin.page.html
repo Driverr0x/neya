@@ -1,0 +1,134 @@
+<ion-header>
+  <app-brand-header />
+  <ion-toolbar>
+    <ion-title>Équipe NEYA</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main class="dashboard">
+    <div class="dashboard-top">
+      <div>
+        <p class="eyebrow">ÉQUIPE NEYA</p>
+        <h1>{{ section() === 'structures' ? 'Demandes des structures' : 'Vérification des médecins' }}</h1>
+      </div>
+      <button class="secondary-button" type="button" (click)="signOut()">Déconnexion</button>
+    </div>
+
+    <nav class="section-tabs" aria-label="Que vérifier ?">
+      <button type="button" [class.selected]="section() === 'structures'" (click)="section.set('structures')">
+        Structures @if (count('pending')) { <span class="badge">{{ count('pending') }}</span> }
+      </button>
+      <button type="button" [class.selected]="section() === 'doctors'" (click)="section.set('doctors')">
+        Médecins @if (doctorCount('pending')) { <span class="badge">{{ doctorCount('pending') }}</span> }
+      </button>
+    </nav>
+
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+    @if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+
+    @if (section() === 'doctors') {
+      <p class="admin-hint">
+        Vérifiez le numéro d’ordre auprès de l’Ordre concerné (médecins, sages-femmes, psychologues) avant de valider.
+        Un médecin vérifié apparaît aux utilisatrices et peut recevoir leurs messages.
+      </p>
+      <nav class="status-tabs" aria-label="Filtrer les médecins">
+        @for (status of doctorStatuses; track status) {
+          <button type="button" [class.selected]="doctorFilter() === status" (click)="doctorFilter.set(status)">
+            {{ doctorStatusLabel[status] }} ({{ doctorCount(status) }})
+          </button>
+        }
+      </nav>
+      @if (loading()) {
+        <p class="status-card">Chargement des médecins…</p>
+      } @else {
+        @for (doctor of visibleDoctors(); track doctor.id) {
+          <section class="panel structure-card">
+            <div class="section-heading">
+              <div>
+                <h2>{{ doctor.display_name }}</h2>
+                <p class="meta">
+                  {{ doctor.specialty ? specialtyLabel[doctor.specialty] : 'Spécialité non renseignée' }}
+                  · {{ doctor.structure_name || 'Sans structure' }}{{ doctor.structure_city ? ', ' + doctor.structure_city : '' }}
+                </p>
+              </div>
+              <span class="status-pill">{{ doctorStatusLabel[doctor.status] }}</span>
+            </div>
+            <dl>
+              <dt>N° d’ordre</dt><dd><strong>{{ doctor.order_number || 'Non renseigné (compte créé avant cette étape)' }}</strong></dd>
+              <dt>Téléphone</dt>
+              <dd>
+                @if (doctor.phone) { <a [href]="'tel:' + doctor.phone">{{ doctor.phone }}</a> } @else { Non renseigné }
+              </dd>
+              <dt>Compte</dt><dd>{{ doctor.email || 'Inconnu' }}</dd>
+              <dt>Inscription</dt><dd>{{ formatDate(doctor.created_at) }}</dd>
+            </dl>
+            <div class="actions">
+              @if (doctor.status !== 'active') {
+                <button class="primary-button" type="button" [disabled]="busyId() === doctor.id" (click)="setDoctorStatus(doctor, 'active')">Numéro vérifié</button>
+              }
+              @if (doctor.status !== 'disabled') {
+                <button class="secondary-button" type="button" [disabled]="busyId() === doctor.id" (click)="setDoctorStatus(doctor, 'disabled')">Suspendre</button>
+              }
+              @if (doctor.status === 'disabled') {
+                <button class="secondary-button" type="button" [disabled]="busyId() === doctor.id" (click)="setDoctorStatus(doctor, 'pending')">Remettre en vérification</button>
+              }
+            </div>
+          </section>
+        } @empty {
+          <p class="empty">Aucun médecin dans cette liste.</p>
+        }
+      }
+    } @else {
+    <p class="admin-hint">
+      Avant de valider, vérifiez hors de l’application que la structure existe vraiment (appel au numéro indiqué, agrément…).
+      Une structure validée peut inviter des médecins, recevoir des rendez-vous et publier des vidéos.
+    </p>
+
+    <nav class="status-tabs" aria-label="Filtrer les structures">
+      @for (status of statuses; track status) {
+        <button type="button" [class.selected]="filter() === status" (click)="filter.set(status)">
+          {{ statusLabel[status] }} ({{ count(status) }})
+        </button>
+      }
+    </nav>
+
+    @if (loading()) {
+      <p class="status-card">Chargement des demandes…</p>
+    } @else {
+      @for (structure of visible(); track structure.id) {
+        <section class="panel structure-card">
+          <div class="section-heading">
+            <div>
+              <h2>{{ structure.name }}</h2>
+              <p class="meta">{{ structure.city }} · demande du {{ formatDate(structure.created_at) }}</p>
+            </div>
+            <span class="status-pill">{{ statusLabel[structure.approval_status] }}</span>
+          </div>
+          <dl>
+            <dt>Téléphone</dt><dd><a [href]="'tel:' + structure.phone">{{ structure.phone }}</a></dd>
+            <dt>Adresse</dt><dd>{{ structure.address || 'Non renseignée' }}</dd>
+            <dt>Compte</dt><dd>{{ structure.owner_email || 'Inconnu' }}</dd>
+            <dt>Médecins</dt><dd>{{ structure.doctor_count }}</dd>
+          </dl>
+          <div class="actions">
+            @if (structure.approval_status !== 'approved') {
+              <button class="primary-button" type="button" [disabled]="busyId() === structure.id" (click)="setStatus(structure, 'approved')">Valider</button>
+            }
+            @if (structure.approval_status !== 'rejected') {
+              <button class="secondary-button" type="button" [disabled]="busyId() === structure.id" (click)="setStatus(structure, 'rejected')">
+                {{ structure.approval_status === 'approved' ? 'Retirer la validation' : 'Refuser' }}
+              </button>
+            }
+            @if (structure.approval_status === 'rejected') {
+              <button class="secondary-button" type="button" [disabled]="busyId() === structure.id" (click)="setStatus(structure, 'pending')">Remettre en attente</button>
+            }
+          </div>
+        </section>
+      } @empty {
+        <p class="empty">Aucune structure dans cette liste.</p>
+      }
+    }
+    }
+  </main>
+</ion-content>

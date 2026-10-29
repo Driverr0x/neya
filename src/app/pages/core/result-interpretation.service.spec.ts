@@ -1,3 +1,4 @@
+import { TestBed } from '@angular/core/testing';
 import { OrientationResult } from './models';
 import { ResultInterpretationService } from './result-interpretation.service';
 import { BackendService } from './backend.service';
@@ -17,7 +18,8 @@ describe('ResultInterpretationService', () => {
   });
 
   beforeEach(() => {
-    service = new ResultInterpretationService({} as BackendService);
+    TestBed.configureTestingModule({ providers: [{ provide: BackendService, useValue: {} }] });
+    service = TestBed.inject(ResultInterpretationService);
   });
 
   it('explains a concerning result without presenting it as a diagnosis', async () => {
